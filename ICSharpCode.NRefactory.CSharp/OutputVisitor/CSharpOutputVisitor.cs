@@ -1,14 +1,14 @@
 // Copyright (c) 2010-2013 AlphaSierraPapa for the SharpDevelop Team
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this
 // software and associated documentation files (the "Software"), to deal in the Software
 // without restriction, including without limitation the rights to use, copy, modify, merge,
 // publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
 // to whom the Software is furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all copies or
 // substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 // INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
 // PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
@@ -158,7 +158,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			this.policy = formattingPolicy;
 			this.cancellationToken = new CancellationToken();
 		}
-		
+
 		public CSharpOutputVisitor (TokenWriter writer, CSharpFormattingOptions formattingPolicy, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			if (writer == null) {
@@ -171,7 +171,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			this.policy = formattingPolicy;
 			this.cancellationToken = cancellationToken;
 		}
-		
+
 		#region StartNode/EndNode
 		protected virtual void StartNode(AstNode node)
 		{
@@ -181,7 +181,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			containerStack.Push(node);
 			writer.StartNode(node);
 		}
-		
+
 		protected virtual void EndNode(AstNode node)
 		{
 			Debug.Assert(node == containerStack.Peek());
@@ -189,7 +189,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			writer.EndNode(node);
 		}
 		#endregion
-		
+
 		#region debug statements
 		void DebugStart(AstNode node, int? start = null)
 		{
@@ -232,7 +232,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			writer.DebugEnd(node, end);
 		}
 		#endregion
-		
+
 		#region Comma
 		/// <summary>
 		/// Writes a comma.
@@ -247,7 +247,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			Space(!noSpaceAfterComma && policy.SpaceAfterBracketComma);
 			// TODO: Comma policy has changed.
 		}
-		
+
 		/// <summary>
 		/// Writes an optional comma, e.g. at the end of an enum declaration or in an array initializer
 		/// </summary>
@@ -261,7 +261,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 				Comma(null, noSpaceAfterComma: true);
 			}
 		}
-		
+
 		/// <summary>
 		/// Writes an optional semicolon, e.g. at the end of a type or namespace declaration.
 		/// </summary>
@@ -275,7 +275,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 				Semicolon();
 			}
 		}
-		
+
 		protected virtual void WriteCommaSeparatedList(IEnumerable<AstNode> list)
 		{
 			bool isFirst = true;
@@ -293,7 +293,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 				node.AcceptVisitor(this);
 			}
 		}
-		
+
 		protected virtual void WriteCommaSeparatedListInParenthesis(IEnumerable<AstNode> list, bool spaceWithin, CodeBracesRangeFlags flags)
 		{
 			var braceHelper = BraceHelper.LeftParen(this, flags);
@@ -304,23 +304,23 @@ namespace ICSharpCode.NRefactory.CSharp {
 			}
 			braceHelper.RightParen();
 		}
-		
+
 		#if DOTNET35
 		void WriteCommaSeparatedList(IEnumerable<VariableInitializer> list)
 		{
 			WriteCommaSeparatedList(list.SafeCast<VariableInitializer, AstNode>());
 		}
-		
+
 		void WriteCommaSeparatedList(IEnumerable<AstType> list)
 		{
 			WriteCommaSeparatedList(list.SafeCast<AstType, AstNode>());
 		}
-		
+
 		void WriteCommaSeparatedListInParenthesis(IEnumerable<Expression> list, bool spaceWithin)
 		{
 			WriteCommaSeparatedListInParenthesis(list.SafeCast<Expression, AstNode>(), spaceWithin);
 		}
-		
+
 		void WriteCommaSeparatedListInParenthesis(IEnumerable<ParameterDeclaration> list, bool spaceWithin)
 		{
 			WriteCommaSeparatedListInParenthesis(list.SafeCast<ParameterDeclaration, AstNode>(), spaceWithin);
@@ -350,7 +350,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			braceHelper.RightBracket();
 		}
 		#endregion
-		
+
 		#region Write tokens
 		protected bool isAtStartOfLine = true;
 
@@ -372,7 +372,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			int end = writer.GetLocation() ?? 0;
 			writer.AddHighlightedKeywordReference(reference, start, end);
 		}
-		
+
 		/// <summary>
 		/// Writes a keyword, and all specials up to
 		/// </summary>
@@ -380,7 +380,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 		{
 			WriteKeywordIdentifier(tokenRole.Token, tokenRole, node, false);
 		}
-		
+
 		protected virtual void WriteKeyword(string token, Role tokenRole = null, AstNode node = null)
 		{
 			WriteKeywordIdentifier(token, tokenRole, node, false);
@@ -401,7 +401,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 				writer.WriteKeyword(tokenRole, token);
 			isAtStartOfLine = false;
 		}
-		
+
 		protected virtual void WriteIdentifier(Identifier identifier)
 		{
 			WriteIdentifier(identifier, (identifier.AnnotationVT<TextColor>() ?? TextColor.Text).Box());
@@ -412,7 +412,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			writer.WriteIdentifier(identifier, data);
 			isAtStartOfLine = false;
 		}
-		
+
 		protected virtual void WriteIdentifier(string identifier, object data)
 		{
 			AstType.Create(identifier, data).AcceptVisitor(this);
@@ -424,18 +424,18 @@ namespace ICSharpCode.NRefactory.CSharp {
 			object data = char.IsLetter(token[0]) ? BoxedTextColor.Keyword : BoxedTextColor.Operator;
 			WriteToken(token, tokenRole, data);
 		}
-		
+
 		protected virtual void WriteToken(TokenRole tokenRole, object data)
 		{
 			WriteToken(tokenRole.Token, tokenRole, data);
 		}
-		
+
 		protected virtual void WriteToken(string token, Role tokenRole, object data)
 		{
 			writer.WriteToken(tokenRole, token, data);
 			isAtStartOfLine = false;
 		}
-		
+
 		/// <summary>
 		/// Marks the end of a statement
 		/// </summary>
@@ -455,7 +455,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 				DebugEnd(node);
 		}
 		bool HACK_disableSemicolonNewLine;
-		
+
 		/// <summary>
 		/// Writes a space depending on policy.
 		/// </summary>
@@ -465,7 +465,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 				writer.Space();
 			}
 		}
-		
+
 		protected virtual void NewLine()
 		{
 			writer.NewLine();
@@ -540,7 +540,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			NewLine();
 			return braceHelper;
 		}
-		
+
 		void CloseBrace(BraceStyle style, BraceHelper braceHelper, out int? start, out int? end, bool saveDeclOffset)
 		{
 			switch (style) {
@@ -586,7 +586,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 		}
 
 		#endregion
-		
+
 		#region IsKeyword Test
 		static readonly HashSet<string> unconditionalKeywords = new HashSet<string> {
 			"abstract", "as", "base", "bool", "break", "byte", "case", "catch",
@@ -604,7 +604,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			"from", "where", "join", "on", "equals", "into", "let", "orderby",
 			"ascending", "descending", "select", "group", "by"
 		};
-		
+
 		/// <summary>
 		/// Determines whether the specified identifier is a keyword in the given context.
 		/// </summary>
@@ -633,7 +633,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			return false;
 		}
 		#endregion
-		
+
 		#region Write constructs
 		protected virtual void WriteTypeArguments(IEnumerable<AstType> typeArguments, CodeBracesRangeFlags flags)
 		{
@@ -643,7 +643,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 				braceHelper.RightChevron();
 			}
 		}
-		
+
 		public virtual void WriteTypeParameters(IEnumerable<TypeParameterDeclaration> typeParameters, CodeBracesRangeFlags flags)
 		{
 			if (typeParameters.Any()) {
@@ -652,7 +652,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 				braceHelper.RightChevron();
 			}
 		}
-		
+
 		protected virtual void WriteModifiers(IEnumerable<CSharpModifierToken> modifierTokens, AstNode nextNode)
 		{
 			int count = 0;
@@ -687,8 +687,18 @@ namespace ICSharpCode.NRefactory.CSharp {
 				writer.WriteIdentifier(ident, CSharpMetadataTextColorProvider.Instance.GetColor(ident.Annotation<object>()));
 			}
 		}
-		
-		protected virtual void WriteEmbeddedStatement(Statement embeddedStatement)
+
+		/// <summary>
+		/// Writes an embedded statement.
+		/// </summary>
+		/// <param name="embeddedStatement">The statement to write.</param>
+		/// <param name="nlp">Determines whether a trailing newline should be written following a block.
+		/// Non-blocks always write a trailing newline.</param>
+		/// <remarks>
+		/// Blocks may or may not write a leading newline depending on StatementBraceStyle.
+		/// Non-blocks always write a leading newline.
+		/// </remarks>
+		protected virtual void WriteEmbeddedStatement(Statement embeddedStatement, NewLinePlacement nlp = NewLinePlacement.NewLine)
 		{
 			if (embeddedStatement.IsNull) {
 				NewLine();
@@ -696,7 +706,12 @@ namespace ICSharpCode.NRefactory.CSharp {
 			}
 			BlockStatement block = embeddedStatement as BlockStatement;
 			if (block != null) {
-				VisitBlockStatement(block);
+				WriteBlock(block, policy.StatementBraceStyle);
+				if (nlp == NewLinePlacement.SameLine) {
+					Space(); // if not a trailing newline, then at least a trailing space
+				} else {
+					NewLine();
+				}
 			} else {
 				NewLine();
 				writer.Indent();
@@ -704,18 +719,19 @@ namespace ICSharpCode.NRefactory.CSharp {
 				writer.Unindent();
 			}
 		}
-		
-		protected virtual void WriteMethodBody(BlockStatement body)
+
+		protected virtual void WriteMethodBody(BlockStatement body, BraceStyle style)
 		{
 			if (body.IsNull) {
 				SaveDeclarationOffset();
 				Semicolon();
 			} else {
-				VisitBlockStatement(body);
+				WriteBlock(body, style);
+				NewLine();
 				SaveDeclarationOffset(lastBlockStatementEndOffset);
 			}
 		}
-		
+
 		protected virtual void WriteAttributes(IEnumerable<AttributeSection> attributes)
 		{
 			int count = 0;
@@ -727,7 +743,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 				attr.AcceptVisitor(this);
 			}
 		}
-		
+
 		protected virtual void WritePrivateImplementationType(AstType privateImplementationType)
 		{
 			if (!privateImplementationType.IsNull) {
@@ -737,7 +753,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 		}
 
 		#endregion
-		
+
 		#region Expressions
 		public virtual void VisitAnonymousMethodExpression(AnonymousMethodExpression anonymousMethodExpression)
 		{
@@ -759,13 +775,14 @@ namespace ICSharpCode.NRefactory.CSharp {
 				Space(policy.SpaceBeforeMethodDeclarationParentheses);
 				WriteCommaSeparatedListInParenthesis(anonymousMethodExpression.Parameters, policy.SpaceWithinMethodDeclarationParentheses, CodeBracesRangeFlags.Parentheses);
 			}
-			anonymousMethodExpression.Body.AcceptVisitor(this);
+
+			WriteBlock(anonymousMethodExpression.Body, policy.AnonymousMethodBraceStyle);
 			if (builder != null && builder.EndPosition == null)
 				builder.EndPosition = writer.GetLocation();
 			currentMethodRefs = oldRef;
 			EndNode(anonymousMethodExpression);
 		}
-		
+
 		public virtual void VisitUndocumentedExpression(UndocumentedExpression undocumentedExpression)
 		{
 			DebugExpression(undocumentedExpression);
@@ -785,13 +802,13 @@ namespace ICSharpCode.NRefactory.CSharp {
 					WriteKeyword(UndocumentedExpression.RefvalueKeywordRole);
 					break;
 			}
-			if (undocumentedExpression.Arguments.Count > 0) {
+			if (undocumentedExpression.UndocumentedExpressionType != UndocumentedExpressionType.ArgListAccess) {
 				Space(policy.SpaceBeforeMethodCallParentheses);
 				WriteCommaSeparatedListInParenthesis(undocumentedExpression.Arguments, policy.SpaceWithinMethodCallParentheses, CodeBracesRangeFlags.Parentheses);
 			}
 			EndNode(undocumentedExpression);
 		}
-		
+
 		public virtual void VisitArrayCreateExpression(ArrayCreateExpression arrayCreateExpression)
 		{
 			DebugExpression(arrayCreateExpression);
@@ -812,7 +829,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			arrayCreateExpression.Initializer.AcceptVisitor(this);
 			EndNode(arrayCreateExpression);
 		}
-		
+
 		public virtual void VisitArrayInitializerExpression(ArrayInitializerExpression arrayInitializerExpression)
 		{
 			DebugExpression(arrayInitializerExpression);
@@ -832,7 +849,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			}
 			EndNode(arrayInitializerExpression);
 		}
-		
+
 		protected bool CanBeConfusedWithObjectInitializer(Expression expr)
 		{
 			// "int a; new List<int> { a = 1 };" is an object initalizers and invalid, but
@@ -840,7 +857,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			AssignmentExpression ae = expr as AssignmentExpression;
 			return ae != null && ae.Operator == AssignmentOperatorType.Assign;
 		}
-		
+
 		protected bool IsObjectOrCollectionInitializer(AstNode node)
 		{
 			if (!(node is ArrayInitializerExpression)) {
@@ -854,7 +871,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			}
 			return false;
 		}
-		
+
 		protected virtual void PrintInitializerElements(AstNodeCollection<Expression> elements, CodeBracesRangeFlags flags)
 		{
 			BraceStyle style;
@@ -886,7 +903,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			NewLine();
 			CloseBrace(style, braceHelper, false);
 		}
-		
+
 		public virtual void VisitAsExpression(AsExpression asExpression)
 		{
 			DebugExpression(asExpression);
@@ -898,7 +915,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			asExpression.Type.AcceptVisitor(this);
 			EndNode(asExpression);
 		}
-		
+
 		public virtual void VisitAssignmentExpression(AssignmentExpression assignmentExpression)
 		{
 			DebugExpression(assignmentExpression);
@@ -910,7 +927,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			assignmentExpression.Right.AcceptVisitor(this);
 			EndNode(assignmentExpression);
 		}
-		
+
 		public virtual void VisitBaseReferenceExpression(BaseReferenceExpression baseReferenceExpression)
 		{
 			DebugExpression(baseReferenceExpression);
@@ -918,7 +935,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			WriteKeyword("base", baseReferenceExpression.Role);
 			EndNode(baseReferenceExpression);
 		}
-		
+
 		public virtual void VisitBinaryOperatorExpression(BinaryOperatorExpression binaryOperatorExpression)
 		{
 			DebugExpression(binaryOperatorExpression);
@@ -970,7 +987,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			binaryOperatorExpression.Right.AcceptVisitor(this);
 			EndNode(binaryOperatorExpression);
 		}
-		
+
 		public virtual void VisitCastExpression(CastExpression castExpression)
 		{
 			DebugExpression(castExpression);
@@ -984,7 +1001,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			castExpression.Expression.AcceptVisitor(this);
 			EndNode(castExpression);
 		}
-		
+
 		public virtual void VisitCheckedExpression(CheckedExpression checkedExpression)
 		{
 			DebugExpression(checkedExpression);
@@ -997,7 +1014,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			braceHelper.RightParen();
 			EndNode(checkedExpression);
 		}
-		
+
 		public virtual void VisitConditionalExpression(ConditionalExpression conditionalExpression)
 		{
 			DebugExpression(conditionalExpression);
@@ -1009,42 +1026,42 @@ namespace ICSharpCode.NRefactory.CSharp {
 			}
 
 			conditionalExpression.Condition.AcceptVisitor(this);
-			
+
 			Space(policy.SpaceBeforeConditionalOperatorCondition);
 			WriteToken(ConditionalExpression.QuestionMarkRole, BoxedTextColor.Operator);
 			Space(policy.SpaceAfterConditionalOperatorCondition);
-			
+
 			conditionalExpression.TrueExpression.AcceptVisitor(this);
-			
+
 			Space(policy.SpaceBeforeConditionalOperatorSeparator);
 			WriteToken(ConditionalExpression.ColonRole, BoxedTextColor.Operator);
 			Space(policy.SpaceAfterConditionalOperatorSeparator);
-			
+
 			conditionalExpression.FalseExpression.AcceptVisitor(this);
-			
+
 			EndNode(conditionalExpression);
 		}
-		
+
 		public virtual void VisitDefaultValueExpression(DefaultValueExpression defaultValueExpression)
 		{
 			DebugExpression(defaultValueExpression);
 			StartNode(defaultValueExpression);
-			
+
 			WriteKeyword(DefaultValueExpression.DefaultKeywordRole);
 			var braceHelper = BraceHelper.LeftParen(this, CodeBracesRangeFlags.Parentheses);
 			Space(policy.SpacesWithinTypeOfParentheses);
 			defaultValueExpression.Type.AcceptVisitor(this);
 			Space(policy.SpacesWithinTypeOfParentheses);
 			braceHelper.RightParen();
-			
+
 			EndNode(defaultValueExpression);
 		}
-		
+
 		public virtual void VisitDirectionExpression(DirectionExpression directionExpression)
 		{
 			DebugExpression(directionExpression);
 			StartNode(directionExpression);
-			
+
 			switch (directionExpression.FieldDirection) {
 				case FieldDirection.In:
 					break;
@@ -1060,10 +1077,10 @@ namespace ICSharpCode.NRefactory.CSharp {
 					throw new NotSupportedException ("Invalid value for FieldDirection");
 			}
 			directionExpression.Expression.AcceptVisitor(this);
-			
+
 			EndNode(directionExpression);
 		}
-		
+
 		public virtual void VisitIdentifierExpression(IdentifierExpression identifierExpression)
 		{
 			DebugExpression(identifierExpression);
@@ -1072,7 +1089,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			WriteTypeArguments(identifierExpression.TypeArguments, CodeBracesRangeFlags.AngleBrackets);
 			EndNode(identifierExpression);
 		}
-		
+
 		public virtual void VisitIndexerExpression(IndexerExpression indexerExpression)
 		{
 			DebugExpression(indexerExpression);
@@ -1082,7 +1099,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			WriteCommaSeparatedListInBrackets(indexerExpression.Arguments, CodeBracesRangeFlags.SquareBrackets);
 			EndNode(indexerExpression);
 		}
-		
+
 		public virtual void VisitInvocationExpression(InvocationExpression invocationExpression)
 		{
 			DebugExpression(invocationExpression);
@@ -1092,7 +1109,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			WriteCommaSeparatedListInParenthesis(invocationExpression.Arguments, policy.SpaceWithinMethodCallParentheses, CodeBracesRangeFlags.Parentheses);
 			EndNode(invocationExpression);
 		}
-		
+
 		public virtual void VisitIsExpression(IsExpression isExpression)
 		{
 			DebugExpression(isExpression);
@@ -1103,7 +1120,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			isExpression.Type.AcceptVisitor(this);
 			EndNode(isExpression);
 		}
-		
+
 		public virtual void VisitLambdaExpression(LambdaExpression lambdaExpression)
 		{
 			DebugExpression(lambdaExpression);
@@ -1126,11 +1143,18 @@ namespace ICSharpCode.NRefactory.CSharp {
 			}
 			Space();
 			WriteToken(LambdaExpression.ArrowRole, BoxedTextColor.Operator);
-			Space();
 
-			StartNode(lambdaExpression.Body);
-			DebugStart(lambdaExpression.Body);
-			lambdaExpression.Body.AcceptVisitor(this);
+			if (lambdaExpression.Body is BlockStatement) {
+				StartNode(lambdaExpression.Body);
+				DebugStart(lambdaExpression.Body);
+				WriteBlock((BlockStatement)lambdaExpression.Body, policy.AnonymousMethodBraceStyle);
+			} else {
+				Space();
+				StartNode(lambdaExpression.Body);
+				DebugStart(lambdaExpression.Body);
+				lambdaExpression.Body.AcceptVisitor(this);
+			}
+
 			DebugEnd(lambdaExpression.Body);
 			EndNode(lambdaExpression.Body);
 
@@ -1139,7 +1163,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			currentMethodRefs = oldRef;
 			EndNode(lambdaExpression);
 		}
-		
+
 		protected bool LambdaNeedsParenthesis(LambdaExpression lambdaExpression)
 		{
 			if (lambdaExpression.Parameters.Count != 1) {
@@ -1148,7 +1172,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			var p = lambdaExpression.Parameters.Single();
 			return !(p.Type.IsNull && p.ParameterModifier == ParameterModifier.None);
 		}
-		
+
 		public virtual void VisitMemberReferenceExpression(MemberReferenceExpression memberReferenceExpression)
 		{
 			DebugExpression(memberReferenceExpression);
@@ -1159,7 +1183,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			WriteTypeArguments(memberReferenceExpression.TypeArguments, CodeBracesRangeFlags.AngleBrackets);
 			EndNode(memberReferenceExpression);
 		}
-		
+
 		public virtual void VisitNamedArgumentExpression(NamedArgumentExpression namedArgumentExpression)
 		{
 			DebugExpression(namedArgumentExpression);
@@ -1170,7 +1194,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			namedArgumentExpression.Expression.AcceptVisitor(this);
 			EndNode(namedArgumentExpression);
 		}
-		
+
 		public virtual void VisitNamedExpression(NamedExpression namedExpression)
 		{
 			DebugExpression(namedExpression);
@@ -1182,7 +1206,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			namedExpression.Expression.AcceptVisitor(this);
 			EndNode(namedExpression);
 		}
-		
+
 		public virtual void VisitNullReferenceExpression(NullReferenceExpression nullReferenceExpression)
 		{
 			DebugExpression(nullReferenceExpression);
@@ -1190,7 +1214,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			writer.WritePrimitiveValue(null);
 			EndNode(nullReferenceExpression);
 		}
-		
+
 		public virtual void VisitObjectCreateExpression(ObjectCreateExpression objectCreateExpression)
 		{
 			DebugExpression(objectCreateExpression);
@@ -1209,7 +1233,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			objectCreateExpression.Initializer.AcceptVisitor(this);
 			EndNode(objectCreateExpression);
 		}
-		
+
 		public virtual void VisitAnonymousTypeCreateExpression(AnonymousTypeCreateExpression anonymousTypeCreateExpression)
 		{
 			DebugExpression(anonymousTypeCreateExpression);
@@ -1230,7 +1254,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			braceHelper.RightParen();
 			EndNode(parenthesizedExpression);
 		}
-		
+
 		public virtual void VisitPointerReferenceExpression(PointerReferenceExpression pointerReferenceExpression)
 		{
 			DebugExpression(pointerReferenceExpression);
@@ -1241,7 +1265,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			WriteTypeArguments(pointerReferenceExpression.TypeArguments, CodeBracesRangeFlags.AngleBrackets);
 			EndNode(pointerReferenceExpression);
 		}
-		
+
 		#region VisitPrimitiveExpression
 		public virtual void VisitPrimitiveExpression(PrimitiveExpression primitiveExpression)
 		{
@@ -1251,22 +1275,22 @@ namespace ICSharpCode.NRefactory.CSharp {
 			EndNode(primitiveExpression);
 		}
 		#endregion
-		
+
 		public virtual void VisitSizeOfExpression(SizeOfExpression sizeOfExpression)
 		{
 			DebugExpression(sizeOfExpression);
 			StartNode(sizeOfExpression);
-			
+
 			WriteKeyword(SizeOfExpression.SizeofKeywordRole);
 			var braceHelper = BraceHelper.LeftParen(this, CodeBracesRangeFlags.Parentheses);
 			Space(policy.SpacesWithinSizeOfParentheses);
 			sizeOfExpression.Type.AcceptVisitor(this);
 			Space(policy.SpacesWithinSizeOfParentheses);
 			braceHelper.RightParen();
-			
+
 			EndNode(sizeOfExpression);
 		}
-		
+
 		public virtual void VisitStackAllocExpression(StackAllocExpression stackAllocExpression)
 		{
 			DebugExpression(stackAllocExpression);
@@ -1276,7 +1300,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			WriteCommaSeparatedListInBrackets(new[] { stackAllocExpression.CountExpression }, CodeBracesRangeFlags.SquareBrackets);
 			EndNode(stackAllocExpression);
 		}
-		
+
 		public virtual void VisitThisReferenceExpression(ThisReferenceExpression thisReferenceExpression)
 		{
 			DebugExpression(thisReferenceExpression);
@@ -1284,22 +1308,22 @@ namespace ICSharpCode.NRefactory.CSharp {
 			WriteKeyword("this", thisReferenceExpression.Role);
 			EndNode(thisReferenceExpression);
 		}
-		
+
 		public virtual void VisitTypeOfExpression(TypeOfExpression typeOfExpression)
 		{
 			DebugExpression(typeOfExpression);
 			StartNode(typeOfExpression);
-			
+
 			WriteKeyword(TypeOfExpression.TypeofKeywordRole);
 			var braceHelper = BraceHelper.LeftParen(this, CodeBracesRangeFlags.Parentheses);
 			Space(policy.SpacesWithinTypeOfParentheses);
 			typeOfExpression.Type.AcceptVisitor(this);
 			Space(policy.SpacesWithinTypeOfParentheses);
 			braceHelper.RightParen();
-			
+
 			EndNode(typeOfExpression);
 		}
-		
+
 		public virtual void VisitTypeReferenceExpression(TypeReferenceExpression typeReferenceExpression)
 		{
 			DebugExpression(typeReferenceExpression);
@@ -1307,7 +1331,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			typeReferenceExpression.Type.AcceptVisitor(this);
 			EndNode(typeReferenceExpression);
 		}
-		
+
 		public virtual void VisitUnaryOperatorExpression(UnaryOperatorExpression unaryOperatorExpression)
 		{
 			DebugExpression(unaryOperatorExpression);
@@ -1327,7 +1351,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			}
 			EndNode(unaryOperatorExpression);
 		}
-		
+
 		public virtual void VisitUncheckedExpression(UncheckedExpression uncheckedExpression)
 		{
 			DebugExpression(uncheckedExpression);
@@ -1342,7 +1366,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 		}
 
 		#endregion
-		
+
 		#region Query Expressions
 		public virtual void VisitQueryExpression(QueryExpression queryExpression)
 		{
@@ -1374,7 +1398,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			}
 			EndNode(queryExpression);
 		}
-		
+
 		public virtual void VisitQueryContinuationClause(QueryContinuationClause queryContinuationClause)
 		{
 			DebugExpression(queryContinuationClause);
@@ -1386,7 +1410,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			WriteIdentifier(queryContinuationClause.IdentifierToken);
 			EndNode(queryContinuationClause);
 		}
-		
+
 		public virtual void VisitQueryFromClause(QueryFromClause queryFromClause)
 		{
 			DebugExpression(queryFromClause);
@@ -1401,7 +1425,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			queryFromClause.Expression.AcceptVisitor(this);
 			EndNode(queryFromClause);
 		}
-		
+
 		public virtual void VisitQueryLetClause(QueryLetClause queryLetClause)
 		{
 			DebugExpression(queryLetClause);
@@ -1415,7 +1439,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			queryLetClause.Expression.AcceptVisitor(this);
 			EndNode(queryLetClause);
 		}
-		
+
 		public virtual void VisitQueryWhereClause(QueryWhereClause queryWhereClause)
 		{
 			DebugExpression(queryWhereClause);
@@ -1425,7 +1449,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			queryWhereClause.Condition.AcceptVisitor(this);
 			EndNode(queryWhereClause);
 		}
-		
+
 		public virtual void VisitQueryJoinClause(QueryJoinClause queryJoinClause)
 		{
 			DebugExpression(queryJoinClause);
@@ -1453,7 +1477,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			}
 			EndNode(queryJoinClause);
 		}
-		
+
 		public virtual void VisitQueryOrderClause(QueryOrderClause queryOrderClause)
 		{
 			DebugExpression(queryOrderClause);
@@ -1463,7 +1487,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			WriteCommaSeparatedList(queryOrderClause.Orderings);
 			EndNode(queryOrderClause);
 		}
-		
+
 		public virtual void VisitQueryOrdering(QueryOrdering queryOrdering)
 		{
 			DebugExpression(queryOrdering);
@@ -1481,7 +1505,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			}
 			EndNode(queryOrdering);
 		}
-		
+
 		public virtual void VisitQuerySelectClause(QuerySelectClause querySelectClause)
 		{
 			DebugExpression(querySelectClause);
@@ -1491,7 +1515,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			querySelectClause.Expression.AcceptVisitor(this);
 			EndNode(querySelectClause);
 		}
-		
+
 		public virtual void VisitQueryGroupClause(QueryGroupClause queryGroupClause)
 		{
 			DebugExpression(queryGroupClause);
@@ -1507,7 +1531,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 		}
 
 		#endregion
-		
+
 		#region GeneralScope
 		public virtual void VisitAttribute(Attribute attribute)
 		{
@@ -1519,7 +1543,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			}
 			EndNode(attribute);
 		}
-		
+
 		public virtual void VisitAttributeSection(AttributeSection attributeSection)
 		{
 			StartNode(attributeSection);
@@ -1538,7 +1562,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			}
 			EndNode(attributeSection);
 		}
-		
+
 		public virtual void VisitDelegateDeclaration(DelegateDeclaration delegateDeclaration)
 		{
 			StartNode(delegateDeclaration);
@@ -1563,7 +1587,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			Semicolon();
 			EndNode(delegateDeclaration);
 		}
-		
+
 		public virtual void VisitNamespaceDeclaration(NamespaceDeclaration namespaceDeclaration)
 		{
 			StartNode(namespaceDeclaration);
@@ -1588,7 +1612,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			NewLine();
 			EndNode(namespaceDeclaration);
 		}
-		
+
 		public virtual void VisitTypeDeclaration(TypeDeclaration typeDeclaration)
 		{
 			StartNode(typeDeclaration);
@@ -1684,7 +1708,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 				return b is FieldDeclaration;
 			return false;
 		}
-		
+
 		public virtual void VisitUsingAliasDeclaration(UsingAliasDeclaration usingAliasDeclaration)
 		{
 			StartNode(usingAliasDeclaration);
@@ -1698,7 +1722,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			Semicolon();
 			EndNode(usingAliasDeclaration);
 		}
-		
+
 		public virtual void VisitUsingDeclaration(UsingDeclaration usingDeclaration)
 		{
 			StartNode(usingDeclaration);
@@ -1708,7 +1732,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			Semicolon();
 			EndNode(usingDeclaration);
 		}
-		
+
 		public virtual void VisitExternAliasDeclaration(ExternAliasDeclaration externAliasDeclaration)
 		{
 			StartNode(externAliasDeclaration);
@@ -1723,52 +1747,44 @@ namespace ICSharpCode.NRefactory.CSharp {
 		}
 
 		#endregion
-		
+
 		#region Statements
 		public virtual void VisitBlockStatement(BlockStatement blockStatement)
 		{
+			WriteBlock(blockStatement, policy.StatementBraceStyle);
+			NewLine();
+		}
+
+		/// <summary>
+		/// Writes a block statement.
+		/// Similar to VisitBlockStatement() except that:
+		/// 1) it allows customizing the BraceStyle
+		/// 2) it does not write a trailing newline after the '}' (this job is left to the caller)
+		/// </summary>
+		protected virtual void WriteBlock(BlockStatement blockStatement, BraceStyle style)
+		{
 			StartNode(blockStatement);
-			BraceStyle style;
 			CodeBracesRangeFlags flags;
 			MethodDebugInfoBuilder builder = null;
 			if (blockStatement.Parent is AnonymousMethodExpression || blockStatement.Parent is LambdaExpression) {
-				style = policy.AnonymousMethodBraceStyle;
 				flags = CodeBracesRangeFlags.AnonymousMethodBraces;
 				builder = blockStatement.Parent.Annotation<MethodDebugInfoBuilder>();
 			} else if (blockStatement.Parent is ConstructorDeclaration) {
-				style = policy.ConstructorBraceStyle;
 				flags = CodeBracesRangeFlags.ConstructorBraces;
 			} else if (blockStatement.Parent is DestructorDeclaration) {
-				style = policy.DestructorBraceStyle;
 				flags = CodeBracesRangeFlags.DestructorBraces;
 			} else if (blockStatement.Parent is OperatorDeclaration) {
-				style = policy.MethodBraceStyle;
 				flags = CodeBracesRangeFlags.OperatorBraces;
 			} else if (blockStatement.Parent is MethodDeclaration) {
-				style = policy.MethodBraceStyle;
 				flags = CodeBracesRangeFlags.MethodBraces;
 			} else if (blockStatement.Parent is Accessor) {
 				flags = CodeBracesRangeFlags.AccessorBraces;
-				if (blockStatement.Parent.Role == PropertyDeclaration.GetterRole) {
-					style = policy.PropertyGetBraceStyle;
-				} else if (blockStatement.Parent.Role == PropertyDeclaration.SetterRole) {
-					style = policy.PropertySetBraceStyle;
-				} else if (blockStatement.Parent.Role == CustomEventDeclaration.AddAccessorRole) {
-					style = policy.EventAddBraceStyle;
-				} else if (blockStatement.Parent.Role == CustomEventDeclaration.RemoveAccessorRole) {
-					style = policy.EventRemoveBraceStyle;
-				} else {
-					style = policy.StatementBraceStyle;
-				}
 			} else if (blockStatement.Parent is ForeachStatement || blockStatement.Parent is ForStatement ||
 					   blockStatement.Parent is DoWhileStatement || blockStatement.Parent is WhileStatement) {
-				style = policy.StatementBraceStyle;
 				flags = CodeBracesRangeFlags.LoopBraces;
 			} else if (blockStatement.Parent is IfElseStatement) {
-				style = policy.StatementBraceStyle;
 				flags = CodeBracesRangeFlags.ConditionalBraces;
 			} else if (blockStatement.Parent is TryCatchStatement) {
-				style = policy.StatementBraceStyle;
 				var stmt = (TryCatchStatement)blockStatement.Parent;
 				if (stmt.TryBlock == blockStatement)
 					flags = CodeBracesRangeFlags.TryBraces;
@@ -1777,19 +1793,14 @@ namespace ICSharpCode.NRefactory.CSharp {
 				else
 					flags = CodeBracesRangeFlags.OtherBlockBraces;
 			} else if (blockStatement.Parent is CatchClause) {
-				style = policy.StatementBraceStyle;
 				flags = CodeBracesRangeFlags.CatchBraces;
 			} else if (blockStatement.Parent is LockStatement) {
-				style = policy.StatementBraceStyle;
 				flags = CodeBracesRangeFlags.LockBraces;
 			} else if (blockStatement.Parent is UsingStatement) {
-				style = policy.StatementBraceStyle;
 				flags = CodeBracesRangeFlags.UsingBraces;
 			} else if (blockStatement.Parent is FixedStatement) {
-				style = policy.StatementBraceStyle;
 				flags = CodeBracesRangeFlags.FixedBraces;
 			} else {
-				style = policy.StatementBraceStyle;
 				flags = CodeBracesRangeFlags.OtherBlockBraces;
 			}
 			int? start, end;
@@ -1817,11 +1828,9 @@ namespace ICSharpCode.NRefactory.CSharp {
 				DebugHidden(blockStatement.HiddenEnd);
 				DebugEnd(blockStatement, end);
 			}
-			if (!(blockStatement.Parent is Expression))
-				NewLine();
 		}
 		int lastBlockStatementEndOffset;
-		
+
 		public virtual void VisitBreakStatement(BreakStatement breakStatement)
 		{
 			StartNode(breakStatement);
@@ -1830,7 +1839,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			SemicolonDebugEnd(breakStatement);
 			EndNode(breakStatement);
 		}
-		
+
 		public virtual void VisitCheckedStatement(CheckedStatement checkedStatement)
 		{
 			DebugExpression(checkedStatement);
@@ -1839,7 +1848,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			checkedStatement.Body.AcceptVisitor(this);
 			EndNode(checkedStatement);
 		}
-		
+
 		public virtual void VisitContinueStatement(ContinueStatement continueStatement)
 		{
 			StartNode(continueStatement);
@@ -1848,7 +1857,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			SemicolonDebugEnd(continueStatement);
 			EndNode(continueStatement);
 		}
-		
+
 		public virtual void VisitDoWhileStatement(DoWhileStatement doWhileStatement)
 		{
 			StartNode(doWhileStatement);
@@ -1857,7 +1866,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			var oldBreakRef = currentBreakReference;
 			currentBreakReference = currentLoopReference;
 			WriteKeywordReference(DoWhileStatement.DoKeywordRole, currentLoopReference);
-			WriteEmbeddedStatement(doWhileStatement.EmbeddedStatement);
+			WriteEmbeddedStatement(doWhileStatement.EmbeddedStatement, policy.WhileNewLinePlacement);
 			DebugStart(doWhileStatement);
 			WriteKeywordReference(DoWhileStatement.WhileKeywordRole, currentLoopReference);
 			Space(policy.SpaceBeforeWhileParentheses);
@@ -1871,7 +1880,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			currentBreakReference = oldBreakRef;
 			EndNode(doWhileStatement);
 		}
-		
+
 		public virtual void VisitEmptyStatement(EmptyStatement emptyStatement)
 		{
 			DebugExpression(emptyStatement);
@@ -1879,7 +1888,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			Semicolon();
 			EndNode(emptyStatement);
 		}
-		
+
 		public virtual void VisitExpressionStatement(ExpressionStatement expressionStatement)
 		{
 			StartNode(expressionStatement);
@@ -1888,7 +1897,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			SemicolonDebugEnd(expressionStatement);
 			EndNode(expressionStatement);
 		}
-		
+
 		public virtual void VisitFixedStatement(FixedStatement fixedStatement)
 		{
 			StartNode(fixedStatement);
@@ -1906,7 +1915,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			WriteEmbeddedStatement(fixedStatement.EmbeddedStatement);
 			EndNode(fixedStatement);
 		}
-		
+
 		public virtual void VisitForeachStatement(ForeachStatement foreachStatement)
 		{
 			StartNode(foreachStatement);
@@ -1944,7 +1953,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			currentBreakReference = oldBreakRef;
 			EndNode(foreachStatement);
 		}
-		
+
 		public virtual void VisitForStatement(ForStatement forStatement)
 		{
 			StartNode(forStatement);
@@ -1967,7 +1976,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			DebugEnd(forStatement, false);
 			if (!emptyForList)
 				Space(policy.SpaceAfterForSemicolon);
-			
+
 			DebugStart(forStatement);
 			forStatement.Condition.AcceptVisitor(this);
 			DebugEnd(forStatement, false);
@@ -1980,7 +1989,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 				WriteCommaSeparatedList(forStatement.Iterators);
 				DebugEnd(forStatement, false);
 			}
-			
+
 			Space(policy.SpacesWithinForParentheses);
 			braceHelper.RightParen();
 			WriteEmbeddedStatement(forStatement.EmbeddedStatement);
@@ -1988,7 +1997,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			currentBreakReference = oldBreakRef;
 			EndNode(forStatement);
 		}
-		
+
 		public virtual void VisitGotoCaseStatement(GotoCaseStatement gotoCaseStatement)
 		{
 			StartNode(gotoCaseStatement);
@@ -1999,7 +2008,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			SemicolonDebugEnd(gotoCaseStatement);
 			EndNode(gotoCaseStatement);
 		}
-		
+
 		public virtual void VisitGotoDefaultStatement(GotoDefaultStatement gotoDefaultStatement)
 		{
 			StartNode(gotoDefaultStatement);
@@ -2008,7 +2017,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			SemicolonDebugEnd(gotoDefaultStatement);
 			EndNode(gotoDefaultStatement);
 		}
-		
+
 		public virtual void VisitGotoStatement(GotoStatement gotoStatement)
 		{
 			StartNode(gotoStatement);
@@ -2018,7 +2027,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			SemicolonDebugEnd(gotoStatement);
 			EndNode(gotoStatement);
 		}
-		
+
 		public virtual void VisitIfElseStatement(IfElseStatement ifElseStatement)
 		{
 			StartNode(ifElseStatement);
@@ -2033,8 +2042,11 @@ namespace ICSharpCode.NRefactory.CSharp {
 			Space(policy.SpacesWithinIfParentheses);
 			braceHelper.RightParen();
 			DebugEnd(ifElseStatement);
-			WriteEmbeddedStatement(ifElseStatement.TrueStatement);
-			if (!ifElseStatement.FalseStatement.IsNull) {
+
+			if (ifElseStatement.FalseStatement.IsNull) {
+				WriteEmbeddedStatement(ifElseStatement.TrueStatement);
+			} else {
+				WriteEmbeddedStatement(ifElseStatement.TrueStatement, policy.ElseNewLinePlacement);
 				if (ifElseStatement.FalseStatement is IfElseStatement) {
 					elseIfStart = writer.GetLocation() ?? 0;
 					WriteKeyword(IfElseStatement.ElseKeywordRole);
@@ -2049,7 +2061,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			currentIfReference = oldRef;
 			EndNode(ifElseStatement);
 		}
-		
+
 		public virtual void VisitLabelStatement(LabelStatement labelStatement)
 		{
 			DebugExpression(labelStatement);
@@ -2069,7 +2081,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			NewLine();
 			EndNode(labelStatement);
 		}
-		
+
 		public virtual void VisitLockStatement(LockStatement lockStatement)
 		{
 			StartNode(lockStatement);
@@ -2085,7 +2097,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			WriteEmbeddedStatement(lockStatement.EmbeddedStatement);
 			EndNode(lockStatement);
 		}
-		
+
 		public virtual void VisitReturnStatement(ReturnStatement returnStatement)
 		{
 			StartNode(returnStatement);
@@ -2098,7 +2110,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			SemicolonDebugEnd(returnStatement);
 			EndNode(returnStatement);
 		}
-		
+
 		public virtual void VisitSwitchStatement(SwitchStatement switchStatement)
 		{
 			StartNode(switchStatement);
@@ -2128,7 +2140,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 				}
 				section.AcceptVisitor(this);
 			}
-			
+
 			if (!policy.IndentSwitchBody) {
 				writer.Indent();
 			}
@@ -2144,7 +2156,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			NewLine();
 			EndNode(switchStatement);
 		}
-		
+
 		public virtual void VisitSwitchSection(SwitchSection switchSection)
 		{
 			StartNode(switchSection);
@@ -2165,7 +2177,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			if (policy.IndentCaseBody && !isBlock) {
 				writer.Indent();
 			}
-			
+
 			if (!isBlock)
 				NewLine();
 
@@ -2177,14 +2189,14 @@ namespace ICSharpCode.NRefactory.CSharp {
 				}
 				statement.AcceptVisitor(this);
 			}
-			
+
 			if (policy.IndentCaseBody && !isBlock) {
 				writer.Unindent();
 			}
-			
+
 			EndNode(switchSection);
 		}
-		
+
 		public virtual void VisitCaseLabel(CaseLabel caseLabel)
 		{
 			DebugExpression(caseLabel);
@@ -2199,7 +2211,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			WriteToken(Roles.Colon, BoxedTextColor.Punctuation);
 			EndNode(caseLabel);
 		}
-		
+
 		public virtual void VisitThrowStatement(ThrowStatement throwStatement)
 		{
 			StartNode(throwStatement);
@@ -2212,30 +2224,39 @@ namespace ICSharpCode.NRefactory.CSharp {
 			SemicolonDebugEnd(throwStatement);
 			EndNode(throwStatement);
 		}
-		
+
 		public virtual void VisitTryCatchStatement(TryCatchStatement tryCatchStatement)
 		{
 			StartNode(tryCatchStatement);
 			var oldRef = currentTryReference;
 			currentTryReference = new object();
 			WriteKeywordReference(TryCatchStatement.TryKeywordRole, currentTryReference);
-			tryCatchStatement.TryBlock.AcceptVisitor(this);
+			WriteBlock(tryCatchStatement.TryBlock, policy.StatementBraceStyle);
 			int count = 0;
 			foreach (var catchClause in tryCatchStatement.CatchClauses) {
 				if (count-- <= 0) {
 					cancellationToken.ThrowIfCancellationRequested();
 					count = CANCEL_CHECK_LOOP_COUNT;
 				}
+				if (policy.CatchNewLinePlacement == NewLinePlacement.SameLine)
+					Space();
+				else
+					NewLine();
 				catchClause.AcceptVisitor(this);
 			}
 			if (!tryCatchStatement.FinallyBlock.IsNull) {
+				if (policy.FinallyNewLinePlacement == NewLinePlacement.SameLine)
+					Space();
+				else
+					NewLine();
 				WriteKeywordReference(TryCatchStatement.FinallyKeywordRole, currentTryReference);
-				tryCatchStatement.FinallyBlock.AcceptVisitor(this);
+				WriteBlock(tryCatchStatement.FinallyBlock, policy.StatementBraceStyle);
 			}
+			NewLine();
 			currentTryReference = oldRef;
 			EndNode(tryCatchStatement);
 		}
-		
+
 		public virtual void VisitCatchClause(CatchClause catchClause)
 		{
 			StartNode(catchClause);
@@ -2267,10 +2288,10 @@ namespace ICSharpCode.NRefactory.CSharp {
 				braceHelper.RightParen();
 				DebugEnd(catchClause.Condition);
 			}
-			catchClause.Body.AcceptVisitor(this);
+			WriteBlock(catchClause.Body, policy.StatementBraceStyle);
 			EndNode(catchClause);
 		}
-		
+
 		public virtual void VisitUncheckedStatement(UncheckedStatement uncheckedStatement)
 		{
 			DebugExpression(uncheckedStatement);
@@ -2279,7 +2300,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			uncheckedStatement.Body.AcceptVisitor(this);
 			EndNode(uncheckedStatement);
 		}
-		
+
 		public virtual void VisitUnsafeStatement(UnsafeStatement unsafeStatement)
 		{
 			DebugExpression(unsafeStatement);
@@ -2288,7 +2309,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			unsafeStatement.Body.AcceptVisitor(this);
 			EndNode(unsafeStatement);
 		}
-		
+
 		public virtual void VisitUsingStatement(UsingStatement usingStatement)
 		{
 			StartNode(usingStatement);
@@ -2296,19 +2317,19 @@ namespace ICSharpCode.NRefactory.CSharp {
 			Space(policy.SpaceBeforeUsingParentheses);
 			var braceHelper = BraceHelper.LeftParen(this, CodeBracesRangeFlags.Parentheses);
 			Space(policy.SpacesWithinUsingParentheses);
-			
+
 			DebugStart(usingStatement);
 			usingStatement.ResourceAcquisition.AcceptVisitor(this);
 			DebugEnd(usingStatement);
-			
+
 			Space(policy.SpacesWithinUsingParentheses);
 			braceHelper.RightParen();
-			
+
 			WriteEmbeddedStatement(usingStatement.EmbeddedStatement);
-			
+
 			EndNode(usingStatement);
 		}
-		
+
 		public virtual void VisitVariableDeclarationStatement(VariableDeclarationStatement variableDeclarationStatement)
 		{
 			StartNode(variableDeclarationStatement);
@@ -2320,7 +2341,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			SemicolonDebugEnd(variableDeclarationStatement);
 			EndNode(variableDeclarationStatement);
 		}
-		
+
 		public virtual void VisitWhileStatement(WhileStatement whileStatement)
 		{
 			StartNode(whileStatement);
@@ -2342,7 +2363,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			currentBreakReference = oldBreakRef;
 			EndNode(whileStatement);
 		}
-		
+
 		public virtual void VisitYieldBreakStatement(YieldBreakStatement yieldBreakStatement)
 		{
 			StartNode(yieldBreakStatement);
@@ -2351,7 +2372,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			SemicolonDebugEnd(yieldBreakStatement);
 			EndNode(yieldBreakStatement);
 		}
-		
+
 		public virtual void VisitYieldReturnStatement(YieldReturnStatement yieldReturnStatement)
 		{
 			StartNode(yieldReturnStatement);
@@ -2364,7 +2385,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 		}
 
 		#endregion
-		
+
 		#region TypeMembers
 		public virtual void VisitAccessor(Accessor accessor)
 		{
@@ -2380,27 +2401,32 @@ namespace ICSharpCode.NRefactory.CSharp {
 			bool isDefault = accessor.Body.IsNull;
 			if (isDefault)
 				DebugStart(accessor);
+			var style = policy.StatementBraceStyle;
 			if (accessor.Role == PropertyDeclaration.GetterRole) {
 				WriteKeywordIdentifier(PropertyDeclaration.GetKeywordRole);
+				style = policy.PropertyGetBraceStyle;
 			} else if (accessor.Role == PropertyDeclaration.SetterRole) {
 				WriteKeywordIdentifier(PropertyDeclaration.SetKeywordRole);
+				style = policy.PropertySetBraceStyle;
 			} else if (accessor.Role == CustomEventDeclaration.AddAccessorRole) {
 				WriteKeywordIdentifier(CustomEventDeclaration.AddKeywordRole);
+				style = policy.EventAddBraceStyle;
 			} else if (accessor.Role == CustomEventDeclaration.RemoveAccessorRole) {
 				WriteKeywordIdentifier(CustomEventDeclaration.RemoveKeywordRole);
+				style = policy.EventRemoveBraceStyle;
 			}
 			if (isDefault) {
 				SaveDeclarationOffset();
 				SemicolonDebugEnd(accessor);
 			}
 			else
-				WriteMethodBody(accessor.Body);
+				WriteMethodBody(accessor.Body, style);
 			if (builder != null)
 				builder.EndPosition = writer.GetLocation();
 			currentMethodRefs = oldRef;
 			EndNode(accessor);
 		}
-		
+
 		public virtual void VisitConstructorDeclaration(ConstructorDeclaration constructorDeclaration)
 		{
 			StartNode(constructorDeclaration);
@@ -2424,13 +2450,13 @@ namespace ICSharpCode.NRefactory.CSharp {
 				Space();
 				constructorDeclaration.Initializer.AcceptVisitor(this);
 			}
-			WriteMethodBody(constructorDeclaration.Body);
+			WriteMethodBody(constructorDeclaration.Body, policy.ConstructorBraceStyle);
 			if (builder != null)
 				builder.EndPosition = writer.GetLocation();
 			currentMethodRefs = oldRef;
 			EndNode(constructorDeclaration);
 		}
-		
+
 		public virtual void VisitConstructorInitializer(ConstructorInitializer constructorInitializer)
 		{
 			StartNode(constructorInitializer);
@@ -2447,7 +2473,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			DebugEnd(constructorInitializer);
 			EndNode(constructorInitializer);
 		}
-		
+
 		public virtual void VisitDestructorDeclaration(DestructorDeclaration destructorDeclaration)
 		{
 			StartNode(destructorDeclaration);
@@ -2456,6 +2482,9 @@ namespace ICSharpCode.NRefactory.CSharp {
 				builder.StartPosition = writer.GetLocation();
 			WriteAttributes(destructorDeclaration.Attributes);
 			WriteModifiers(destructorDeclaration.ModifierTokens, destructorDeclaration.NameToken);
+			if (destructorDeclaration.ModifierTokens.Any()) {
+				Space();
+			}
 			var oldRef = currentMethodRefs;
 			currentMethodRefs = MethodRefs.Create();
 
@@ -2470,13 +2499,13 @@ namespace ICSharpCode.NRefactory.CSharp {
 			Space(policy.SpaceBeforeConstructorDeclarationParentheses);
 			var braceHelper = BraceHelper.LeftParen(this, CodeBracesRangeFlags.Parentheses);
 			braceHelper.RightParen();
-			WriteMethodBody(destructorDeclaration.Body);
+			WriteMethodBody(destructorDeclaration.Body, policy.DestructorBraceStyle);
 			if (builder != null)
 				builder.EndPosition = writer.GetLocation();
 			currentMethodRefs = oldRef;
 			EndNode(destructorDeclaration);
 		}
-		
+
 		public virtual void VisitEnumMemberDeclaration(EnumMemberDeclaration enumMemberDeclaration)
 		{
 			StartNode(enumMemberDeclaration);
@@ -2492,7 +2521,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			SaveDeclarationOffset();
 			EndNode(enumMemberDeclaration);
 		}
-		
+
 		public virtual void VisitEventDeclaration(EventDeclaration eventDeclaration)
 		{
 			StartNode(eventDeclaration);
@@ -2507,7 +2536,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			Semicolon();
 			EndNode(eventDeclaration);
 		}
-		
+
 		public virtual void VisitCustomEventDeclaration(CustomEventDeclaration customEventDeclaration)
 		{
 			StartNode(customEventDeclaration);
@@ -2534,7 +2563,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			NewLine();
 			EndNode(customEventDeclaration);
 		}
-		
+
 		public virtual void VisitFieldDeclaration(FieldDeclaration fieldDeclaration)
 		{
 			StartNode(fieldDeclaration);
@@ -2548,7 +2577,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			SemicolonDebugEnd(fieldDeclaration);
 			EndNode(fieldDeclaration);
 		}
-		
+
 		public virtual void VisitFixedFieldDeclaration(FixedFieldDeclaration fixedFieldDeclaration)
 		{
 			StartNode(fixedFieldDeclaration);
@@ -2563,7 +2592,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			Semicolon();
 			EndNode(fixedFieldDeclaration);
 		}
-		
+
 		public virtual void VisitFixedVariableInitializer(FixedVariableInitializer fixedVariableInitializer)
 		{
 			DebugExpression(fixedVariableInitializer);
@@ -2578,7 +2607,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			}
 			EndNode(fixedVariableInitializer);
 		}
-		
+
 		public virtual void VisitIndexerDeclaration(IndexerDeclaration indexerDeclaration)
 		{
 			StartNode(indexerDeclaration);
@@ -2606,7 +2635,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			NewLine();
 			EndNode(indexerDeclaration);
 		}
-		
+
 		public virtual void VisitMethodDeclaration(MethodDeclaration methodDeclaration)
 		{
 			StartNode(methodDeclaration);
@@ -2632,13 +2661,13 @@ namespace ICSharpCode.NRefactory.CSharp {
 				}
 				constraint.AcceptVisitor(this);
 			}
-			WriteMethodBody(methodDeclaration.Body);
+			WriteMethodBody(methodDeclaration.Body, policy.MethodBraceStyle);
 			if (builder != null)
 				builder.EndPosition = writer.GetLocation();
 			currentMethodRefs = oldRef;
 			EndNode(methodDeclaration);
 		}
-		
+
 		public virtual void VisitOperatorDeclaration(OperatorDeclaration operatorDeclaration)
 		{
 			StartNode(operatorDeclaration);
@@ -2666,13 +2695,13 @@ namespace ICSharpCode.NRefactory.CSharp {
 			}
 			Space(policy.SpaceBeforeMethodDeclarationParentheses);
 			WriteCommaSeparatedListInParenthesis(operatorDeclaration.Parameters, policy.SpaceWithinMethodDeclarationParentheses, CodeBracesRangeFlags.Parentheses);
-			WriteMethodBody(operatorDeclaration.Body);
+			WriteMethodBody(operatorDeclaration.Body, policy.MethodBraceStyle);
 			if (builder != null)
 				builder.EndPosition = writer.GetLocation();
 			currentMethodRefs = oldRef;
 			EndNode(operatorDeclaration);
 		}
-		
+
 		public virtual void VisitParameterDeclaration(ParameterDeclaration parameterDeclaration)
 		{
 			StartNode(parameterDeclaration);
@@ -2710,7 +2739,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			SaveDeclarationOffset();
 			EndNode(parameterDeclaration);
 		}
-		
+
 		public virtual void VisitPropertyDeclaration(PropertyDeclaration propertyDeclaration)
 		{
 			StartNode(propertyDeclaration);
@@ -2751,7 +2780,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 		}
 
 		#endregion
-		
+
 		#region Other nodes
 		public virtual void VisitVariableInitializer(VariableInitializer variableInitializer)
 		{
@@ -2787,7 +2816,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 
 			return false;
 		}
-		
+
 		public virtual void VisitSyntaxTree(SyntaxTree syntaxTree)
 		{
 			// don't do node tracking as we visit all children directly
@@ -2817,7 +2846,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 					writer.AddLineSeparator(newOffs);
 			}
 		}
-		
+
 		public virtual void VisitSimpleType(SimpleType simpleType)
 		{
 			StartNode(simpleType);
@@ -2829,7 +2858,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			WriteTypeArguments(simpleType.TypeArguments, CodeBracesRangeFlags.AngleBrackets);
 			EndNode(simpleType);
 		}
-		
+
 		public virtual void VisitMemberType(MemberType memberType)
 		{
 			StartNode(memberType);
@@ -2843,10 +2872,13 @@ namespace ICSharpCode.NRefactory.CSharp {
 			WriteTypeArguments(memberType.TypeArguments, CodeBracesRangeFlags.AngleBrackets);
 			EndNode(memberType);
 		}
-		
+
 		public virtual void VisitComposedType(ComposedType composedType)
 		{
 			StartNode(composedType);
+			if (composedType.HasRefSpecifier) {
+				WriteKeyword(ComposedType.RefRole);
+			}
 			composedType.BaseType.AcceptVisitor(this);
 			if (composedType.HasNullableSpecifier) {
 				WriteToken(ComposedType.NullableRole, BoxedTextColor.Operator);
@@ -2869,7 +2901,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			}
 			EndNode(composedType);
 		}
-		
+
 		public virtual void VisitArraySpecifier(ArraySpecifier arraySpecifier)
 		{
 			StartNode(arraySpecifier);
@@ -2885,14 +2917,14 @@ namespace ICSharpCode.NRefactory.CSharp {
 			braceHelper.RightBracket();
 			EndNode(arraySpecifier);
 		}
-		
+
 		public virtual void VisitPrimitiveType(PrimitiveType primitiveType)
 		{
 			StartNode(primitiveType);
 			writer.WritePrimitiveType(primitiveType.Keyword);
 			EndNode(primitiveType);
 		}
-		
+
 		public virtual void VisitComment(Comment comment)
 		{
 			writer.StartNode(comment);
@@ -2923,7 +2955,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			writer.WritePreProcessorDirective(preProcessorDirective.Type, preProcessorDirective.Argument);
 			writer.EndNode(preProcessorDirective);
 		}
-		
+
 		public virtual void VisitTypeParameterDeclaration(TypeParameterDeclaration typeParameterDeclaration)
 		{
 			StartNode(typeParameterDeclaration);
@@ -2944,7 +2976,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			SaveDeclarationOffset();
 			EndNode(typeParameterDeclaration);
 		}
-		
+
 		public virtual void VisitConstraint(Constraint constraint)
 		{
 			StartNode(constraint);
@@ -2957,7 +2989,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			WriteCommaSeparatedList(constraint.BaseTypes);
 			EndNode(constraint);
 		}
-		
+
 		public virtual void VisitCSharpTokenNode(CSharpTokenNode cSharpTokenNode)
 		{
 			CSharpModifierToken mod = cSharpTokenNode as CSharpModifierToken;
@@ -2977,7 +3009,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 				throw new NotSupportedException ("Should never visit individual tokens");
 			}
 		}
-		
+
 		public virtual void VisitIdentifier(Identifier identifier)
 		{
 			// Do not call StartNode and EndNode for Identifier, because they are handled by the ITokenWriter.
@@ -3004,7 +3036,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			VisitNodeInPattern(pattern);
 			EndNode(placeholder);
 		}
-		
+
 		void VisitAnyNode(AnyNode anyNode)
 		{
 			if (!string.IsNullOrEmpty(anyNode.GroupName)) {
@@ -3012,7 +3044,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 				WriteToken(Roles.Colon, BoxedTextColor.Punctuation);
 			}
 		}
-		
+
 		void VisitBackreference(Backreference backreference)
 		{
 			WriteKeyword("backreference");
@@ -3020,7 +3052,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			WriteIdentifier(backreference.ReferencedGroupName, BoxedTextColor.Text);
 			braceHelper.RightParen();
 		}
-		
+
 		void VisitIdentifierExpressionBackreference(IdentifierExpressionBackreference identifierExpressionBackreference)
 		{
 			WriteKeyword("identifierBackreference");
@@ -3028,7 +3060,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			WriteIdentifier(identifierExpressionBackreference.ReferencedGroupName, BoxedTextColor.Text);
 			braceHelper.RightParen();
 		}
-		
+
 		void VisitChoice(Choice choice)
 		{
 			WriteKeyword("choice");
@@ -3046,7 +3078,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			writer.Unindent();
 			braceHelper.RightParen();
 		}
-		
+
 		void VisitNamedNode(NamedNode namedNode)
 		{
 			if (!string.IsNullOrEmpty(namedNode.GroupName)) {
@@ -3055,7 +3087,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			}
 			VisitNodeInPattern(namedNode.ChildNode);
 		}
-		
+
 		void VisitRepeat(Repeat repeat)
 		{
 			WriteKeyword("repeat");
@@ -3069,7 +3101,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			VisitNodeInPattern(repeat.ChildNode);
 			braceHelper.RightParen();
 		}
-		
+
 		void VisitOptionalNode(OptionalNode optionalNode)
 		{
 			WriteKeyword("optional");
@@ -3077,7 +3109,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			VisitNodeInPattern(optionalNode.ChildNode);
 			braceHelper.RightParen();
 		}
-		
+
 		void VisitNodeInPattern(INode childNode)
 		{
 			if (childNode is AstNode) {
@@ -3101,7 +3133,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			}
 		}
 		#endregion
-		
+
 		#region Documentation Reference
 		public virtual void VisitDocumentationReference(DocumentationReference documentationReference)
 		{

@@ -31,10 +31,25 @@ using ICSharpCode.NRefactory.TypeSystem;
 namespace ICSharpCode.NRefactory.CSharp {
 	public class ComposedType : AstType
 	{
+		public static readonly TokenRole RefRole = new TokenRole("ref");
 		public static readonly TokenRole NullableRole = new TokenRole("?");
 		public static readonly TokenRole PointerRole = new TokenRole("*");
 		public static readonly Role<ArraySpecifier> ArraySpecifierRole = new Role<ArraySpecifier>("ArraySpecifier");
-		
+
+		/// <summary>
+		/// Gets/sets whether this type has a 'ref' specifier.
+		/// This is used for C# 7 ref locals/ref return.
+		/// Parameters use ParameterDeclaration.ParameterModifier instead.
+		/// </summary>
+		public bool HasRefSpecifier {
+			get {
+				return !GetChildByRole(RefRole).IsNull;
+			}
+			set {
+				SetChildByRole(RefRole, value ? new CSharpTokenNode(TextLocation.Empty, null) : null);
+			}
+		}
+
 		public AstType BaseType {
 			get { return GetChildByRole(Roles.Type); }
 			set { SetChildByRole(Roles.Type, value); }
@@ -100,7 +115,10 @@ namespace ICSharpCode.NRefactory.CSharp {
 		protected internal override bool DoMatch(AstNode other, PatternMatching.Match match)
 		{
 			ComposedType o = other as ComposedType;
-			return o != null && this.HasNullableSpecifier == o.HasNullableSpecifier && this.PointerRank == o.PointerRank
+			return o != null
+				&& this.HasNullableSpecifier == o.HasNullableSpecifier
+				&& this.PointerRank == o.PointerRank
+				&& this.HasRefSpecifier == o.HasRefSpecifier
 				&& this.BaseType.DoMatch(o.BaseType, match)
 				&& this.ArraySpecifiers.DoMatch(o.ArraySpecifiers, match);
 		}
@@ -108,6 +126,8 @@ namespace ICSharpCode.NRefactory.CSharp {
 		public override string ToString(CSharpFormattingOptions formattingOptions)
 		{
 			StringBuilder b = new StringBuilder();
+			if (this.HasRefSpecifier)
+				b.Append("ref ");
 			b.Append(this.BaseType.ToString());
 			if (this.HasNullableSpecifier)
 				b.Append('?');
@@ -135,7 +155,13 @@ namespace ICSharpCode.NRefactory.CSharp {
 			InsertChildBefore(this.ArraySpecifiers.FirstOrDefault(), new ArraySpecifier(dimensions), ArraySpecifierRole);
 			return this;
 		}
-		
+
+		public override AstType MakeRefType()
+		{
+			this.HasRefSpecifier = true;
+			return this;
+		}
+
 		public override ITypeReference ToTypeReference(NameLookupMode lookupMode, InterningProvider interningProvider = null)
 		{
 			if (interningProvider == null)
@@ -150,6 +176,9 @@ namespace ICSharpCode.NRefactory.CSharp {
 			}
 			foreach (var a in this.ArraySpecifiers.Reverse()) {
 				t = interningProvider.Intern(new ArrayTypeReference(t, a.Dimensions));
+			}
+			if (this.HasRefSpecifier) {
+				t = interningProvider.Intern(new ByReferenceTypeReference(t));
 			}
 			return t;
 		}
