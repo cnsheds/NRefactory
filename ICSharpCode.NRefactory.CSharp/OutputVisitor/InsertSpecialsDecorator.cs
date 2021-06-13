@@ -1,14 +1,14 @@
 ﻿// Copyright (c) 2010-2013 AlphaSierraPapa for the SharpDevelop Team
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this
 // software and associated documentation files (the "Software"), to deal in the Software
 // without restriction, including without limitation the rights to use, copy, modify, merge,
 // publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
 // to whom the Software is furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all copies or
 // substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 // INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
 // PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
@@ -24,11 +24,11 @@ namespace ICSharpCode.NRefactory.CSharp {
 	{
 		readonly Stack<AstNode> positionStack = new Stack<AstNode>();
 		int visitorWroteNewLine = 0;
-		
+
 		public InsertSpecialsDecorator(TokenWriter writer) : base(writer)
 		{
 		}
-		
+
 		public override void StartNode(AstNode node)
 		{
 			if (positionStack.Count > 0) {
@@ -37,7 +37,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			positionStack.Push(node.FirstChild);
 			base.StartNode(node);
 		}
-		
+
 		public override void EndNode(AstNode node)
 		{
 			base.EndNode(node);
@@ -45,7 +45,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			Debug.Assert(pos == null || pos.Parent == node);
 			WriteSpecials(pos, null);
 		}
-		
+
 		public override void WriteKeyword(Role role, string keyword)
 		{
 			if (role != null) {
@@ -53,26 +53,26 @@ namespace ICSharpCode.NRefactory.CSharp {
 			}
 			base.WriteKeyword(role, keyword);
 		}
-		
+
 		public override void WriteIdentifier(Identifier identifier, object data)
 		{
 			WriteSpecialsUpToRole(identifier.Role ?? Roles.Identifier);
 			base.WriteIdentifier(identifier, data);
 		}
-		
+
 		public override void WriteToken(Role role, string token, object data)
 		{
 			WriteSpecialsUpToRole(role);
 			base.WriteToken(role, token, data);
 		}
-		
+
 		public override void NewLine()
 		{
 			if (visitorWroteNewLine >= 0)
 				base.NewLine();
 			visitorWroteNewLine++;
 		}
-		
+
 		#region WriteSpecials
 		/// <summary>
 		/// Writes all specials from start to end (exclusive). Does not touch the positionStack.
@@ -82,7 +82,9 @@ namespace ICSharpCode.NRefactory.CSharp {
 			for (AstNode pos = start; pos != end; pos = pos.NextSibling) {
 				if (pos.Role == Roles.Comment) {
 					var node = (Comment)pos;
+					base.StartNode(node);
 					base.WriteComment(node.CommentType, node.Content, node.References);
+					base.EndNode(node);
 				}
 				// see CSharpOutputVisitor.VisitNewLine()
 				//				if (pos.Role == Roles.NewLine) {
@@ -92,11 +94,13 @@ namespace ICSharpCode.NRefactory.CSharp {
 				//				}
 				if (pos.Role == Roles.PreProcessorDirective) {
 					var node = (PreProcessorDirective)pos;
+					base.StartNode(node);
 					base.WritePreProcessorDirective(node.Type, node.Argument);
+					base.EndNode(node);
 				}
 			}
 		}
-		
+
 		/// <summary>
 		/// Writes all specials between the current position (in the positionStack) and the next
 		/// node with the specified role. Advances the current position.
@@ -105,7 +109,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 		{
 			WriteSpecialsUpToRole(role, null);
 		}
-		
+
 		void WriteSpecialsUpToRole(Role role, AstNode nextNode)
 		{
 			if (positionStack.Count == 0) {
@@ -123,7 +127,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 				}
 			}
 		}
-		
+
 		/// <summary>
 		/// Writes all specials between the current position (in the positionStack) and the specified node.
 		/// Advances the current position.
@@ -147,7 +151,3 @@ namespace ICSharpCode.NRefactory.CSharp {
 		#endregion
 	}
 }
-
-
-
-

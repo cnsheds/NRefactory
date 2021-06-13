@@ -1,14 +1,14 @@
 ﻿// Copyright (c) 2010-2013 AlphaSierraPapa for the SharpDevelop Team
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this
 // software and associated documentation files (the "Software"), to deal in the Software
 // without restriction, including without limitation the rights to use, copy, modify, merge,
 // publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
 // to whom the Software is furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all copies or
 // substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 // INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
 // PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
@@ -41,13 +41,13 @@ namespace ICSharpCode.NRefactory.CSharp {
 			get { return this.indentation; }
 			set { this.indentation = value; }
 		}
-		
+
 		public TextLocation Location {
 			get { return new TextLocation(line, column + (needsIndent ? indentation * IndentationString.Length : 0)); }
 		}
-		
+
 		public string IndentationString { get; set; }
-		
+
 		public TextWriterTokenWriter(TextWriter textWriter, int maxStringLength = -1)
 		{
 			if (textWriter == null)
@@ -58,7 +58,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			this.column = 1;
 			this.maxStringLength = maxStringLength;
 		}
-		
+
 		public override void WriteIdentifier(Identifier identifier, object data)
 		{
 			WriteIndentation();
@@ -66,11 +66,12 @@ namespace ICSharpCode.NRefactory.CSharp {
 				textWriter.Write('@');
 				column++;
 			}
-			textWriter.Write(identifier.Name);
-			column += identifier.Name.Length;
+			string name = EscapeIdentifier(identifier.Name);
+			textWriter.Write(name);
+			column += name.Length;
 			isAtStartOfLine = false;
 		}
-		
+
 		public override void WriteKeyword(Role role, string keyword)
 		{
 			WriteIndentation();
@@ -78,7 +79,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			textWriter.Write(keyword);
 			isAtStartOfLine = false;
 		}
-		
+
 		public override void WriteToken(Role role, string token, object data)
 		{
 			WriteIndentation();
@@ -86,14 +87,14 @@ namespace ICSharpCode.NRefactory.CSharp {
 			textWriter.Write(token);
 			isAtStartOfLine = false;
 		}
-		
+
 		public override void Space()
 		{
 			WriteIndentation();
 			column++;
 			textWriter.Write(' ');
 		}
-		
+
 		protected void WriteIndentation()
 		{
 			if (needsIndent) {
@@ -104,7 +105,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 				column += indentation * IndentationString.Length;
 			}
 		}
-		
+
 		public override void NewLine()
 		{
 			textWriter.WriteLine();
@@ -113,17 +114,17 @@ namespace ICSharpCode.NRefactory.CSharp {
 			needsIndent = true;
 			isAtStartOfLine = true;
 		}
-		
+
 		public override void Indent()
 		{
 			indentation++;
 		}
-		
+
 		public override void Unindent()
 		{
 			indentation--;
 		}
-		
+
 		public override void WriteComment(CommentType commentType, string content, CommentReference[] refs)
 		{
 			WriteIndentation();
@@ -131,7 +132,8 @@ namespace ICSharpCode.NRefactory.CSharp {
 				case CommentType.SingleLine:
 					textWriter.Write("//");
 					textWriter.WriteLine(content);
-					column += 2 + content.Length;
+					column = 1;
+					line++;
 					needsIndent = true;
 					isAtStartOfLine = true;
 					break;
@@ -147,7 +149,8 @@ namespace ICSharpCode.NRefactory.CSharp {
 				case CommentType.Documentation:
 					textWriter.Write("///");
 					textWriter.WriteLine(content);
-					column += 3 + content.Length;
+					column = 1;
+					line++;
 					needsIndent = true;
 					isAtStartOfLine = true;
 					break;
@@ -166,7 +169,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 					break;
 			}
 		}
-		
+
 		static void UpdateEndLocation(string content, ref int line, ref int column)
 		{
 			if (string.IsNullOrEmpty(content))
@@ -186,7 +189,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 				column++;
 			}
 		}
-		
+
 		public override void WritePreProcessorDirective(PreProcessorDirectiveType type, string argument)
 		{
 			// pre-processor directive must start on its own line
@@ -204,7 +207,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			}
 			NewLine();
 		}
-		
+
 		public static string PrintPrimitiveValue(object value)
 		{
 			TextWriter writer = new StringWriter();
@@ -212,7 +215,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			tokenWriter.WritePrimitiveValue(value, CSharpMetadataTextColorProvider.Instance.GetColor(value));
 			return writer.ToString();
 		}
-		
+
 		public override void WritePrimitiveValue(object value, object data = null, string literalValue = null)
 		{
 			var numberFormatter = NumberFormatter.GetCSharpInstance(hex: false, upper: true);
@@ -227,14 +230,14 @@ namespace ICSharpCode.NRefactory.CSharp {
 				column += literalValue.Length;
 				return;
 			}
-			
+
 			if (value == null) {
 				// usually NullReferenceExpression should be used for this, but we'll handle it anyways
 				writer("null", null, BoxedTextColor.Keyword);
 				column += 4;
 				return;
 			}
-			
+
 			if (value is bool) {
 				if ((bool)value) {
 					writer("true", null, BoxedTextColor.Keyword);
@@ -280,7 +283,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 					return;
 				}
 				var number = f.ToString("R", NumberFormatInfo.InvariantInfo) + "f";
-				if (f == 0 && 1 / f == float.NegativeInfinity) {
+				if (f == 0 && 1 / f == float.NegativeInfinity && number[0] != '-') {
 					// negative zero is a special case
 					// (again, not a primitive expression, but it's better to handle
 					// the special case here than to do it in all code generators)
@@ -309,7 +312,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 					return;
 				}
 				string number = f.ToString("R", NumberFormatInfo.InvariantInfo);
-				if (f == 0 && 1 / f == double.NegativeInfinity) {
+				if (f == 0 && 1 / f == double.NegativeInfinity && number[0] != '-') {
 					// negative zero is a special case
 					// (again, not a primitive expression, but it's better to handle
 					// the special case here than to do it in all code generators)
@@ -359,7 +362,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 				column += s.Length;
 			}
 		}
-		
+
 		/// <summary>
 		/// Gets the escape sequence for the specified character within a char literal.
 		/// Does not include the single quotes surrounding the char literal.
@@ -371,7 +374,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			}
 			return ConvertChar(ch);
 		}
-		
+
 		/// <summary>
 		/// Gets the escape sequence for the specified character.
 		/// </summary>
@@ -397,60 +400,37 @@ namespace ICSharpCode.NRefactory.CSharp {
 					return "\\t";
 				case '\v':
 					return "\\v";
+				case ' ':
+				case '_':
+				case '`':
+				case '^':
+					// ASCII characters we allow directly in the output even though we don't use
+					// other Unicode characters of the same category.
+					return ch.ToString();
+				case '\ufffd':
+					return "\\u" + ((int)ch).ToString("x4");
 				default:
-					if (char.IsControl(ch) || char.IsSurrogate(ch) ||
-					    // print all uncommon white spaces as numbers
-					    (char.IsWhiteSpace(ch) && ch != ' ')) {
+					switch (char.GetUnicodeCategory(ch)) {
+					case UnicodeCategory.NonSpacingMark:
+					case UnicodeCategory.SpacingCombiningMark:
+					case UnicodeCategory.EnclosingMark:
+					case UnicodeCategory.LineSeparator:
+					case UnicodeCategory.ParagraphSeparator:
+					case UnicodeCategory.Control:
+					case UnicodeCategory.Format:
+					case UnicodeCategory.Surrogate:
+					case UnicodeCategory.PrivateUse:
+					case UnicodeCategory.ConnectorPunctuation:
+					case UnicodeCategory.ModifierSymbol:
+					case UnicodeCategory.OtherNotAssigned:
+					case UnicodeCategory.SpaceSeparator:
 						return "\\u" + ((int)ch).ToString("x4");
-					} else {
+					default:
 						return ch.ToString();
 					}
 			}
 		}
 
-		static void AppendChar(StringBuilder sb, char ch)
-		{
-			switch (ch) {
-				case '\\':
-					sb.Append("\\\\");
-					break;
-				case '\0':
-					sb.Append("\\0");
-					break;
-				case '\a':
-					sb.Append("\\a");
-					break;
-				case '\b':
-					sb.Append("\\b");
-					break;
-				case '\f':
-					sb.Append("\\f");
-					break;
-				case '\n':
-					sb.Append("\\n");
-					break;
-				case '\r':
-					sb.Append("\\r");
-					break;
-				case '\t':
-					sb.Append("\\t");
-					break;
-				case '\v':
-					sb.Append("\\v");
-					break;
-				default:
-					if (char.IsControl(ch) || char.IsSurrogate(ch) ||
-					    // print all uncommon white spaces as numbers
-					    (char.IsWhiteSpace(ch) && ch != ' ')) {
-						sb.Append("\\u");
-						sb.Append(((int)ch).ToString("x4"));
-					} else {
-						sb.Append(ch);
-					}
-					break;
-			}
-		}
-		
 		/// <summary>
 		/// Converts special characters to escape sequences within the given string.
 		/// </summary>
@@ -495,14 +475,35 @@ namespace ICSharpCode.NRefactory.CSharp {
 				case '\t':
 				case '\v':
 					goto escapeChars;
+				case ' ':
+				case '_':
+				case '`':
+				case '^':
+					break;
+				case '\ufffd':
+					goto escapeChars;
 				default:
-					if (char.IsControl(c) || char.IsSurrogate(c) || (char.IsWhiteSpace(c) && c != ' '))
+					switch (char.GetUnicodeCategory(c)) {
+					case UnicodeCategory.NonSpacingMark:
+					case UnicodeCategory.SpacingCombiningMark:
+					case UnicodeCategory.EnclosingMark:
+					case UnicodeCategory.LineSeparator:
+					case UnicodeCategory.ParagraphSeparator:
+					case UnicodeCategory.Control:
+					case UnicodeCategory.Format:
+					case UnicodeCategory.Surrogate:
+					case UnicodeCategory.PrivateUse:
+					case UnicodeCategory.ConnectorPunctuation:
+					case UnicodeCategory.ModifierSymbol:
+					case UnicodeCategory.OtherNotAssigned:
+					case UnicodeCategory.SpaceSeparator:
 						goto escapeChars;
+					}
 					break;
 				}
 			}
 
-escapeChars:
+			escapeChars:
 			StringBuilder sb = new StringBuilder();
 			if (i > start)
 				sb.Append(str, start, i - start);
@@ -511,14 +512,61 @@ escapeChars:
 				if (ch == '"') {
 					sb.Append("\\\"");
 				} else {
-					AppendChar(sb, ch);
+					sb.Append(ConvertChar(ch));
 				}
 			}
 			if (truncated)
 				sb.Append(TRUNC_MSG);
 			return sb.ToString();
 		}
-		
+
+		public static string EscapeIdentifier(string identifier)
+		{
+			if (string.IsNullOrEmpty(identifier))
+				return identifier;
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < identifier.Length; i++) {
+				if (IsPrintableIdentifierChar(identifier, i)) {
+					if (char.IsSurrogatePair(identifier, i)) {
+						sb.Append(identifier.Substring(i, 2));
+						i++;
+					} else {
+						sb.Append(identifier[i]);
+					}
+				} else {
+					if (char.IsSurrogatePair(identifier, i)) {
+						sb.AppendFormat("\\U{0:x8}", char.ConvertToUtf32(identifier, i));
+						i++;
+					} else {
+						sb.AppendFormat("\\u{0:x4}", (int)identifier[i]);
+					}
+				}
+			}
+			return sb.ToString();
+		}
+
+		static bool IsPrintableIdentifierChar(string identifier, int index)
+		{
+			switch (char.GetUnicodeCategory(identifier, index)) {
+			case UnicodeCategory.NonSpacingMark:
+			case UnicodeCategory.SpacingCombiningMark:
+			case UnicodeCategory.EnclosingMark:
+			case UnicodeCategory.LineSeparator:
+			case UnicodeCategory.ParagraphSeparator:
+			case UnicodeCategory.Control:
+			case UnicodeCategory.Format:
+			case UnicodeCategory.Surrogate:
+			case UnicodeCategory.PrivateUse:
+			case UnicodeCategory.ConnectorPunctuation:
+			case UnicodeCategory.ModifierSymbol:
+			case UnicodeCategory.OtherNotAssigned:
+			case UnicodeCategory.SpaceSeparator:
+				return false;
+			default:
+				return true;
+			}
+		}
+
 		public override void WritePrimitiveType(string type)
 		{
 			textWriter.Write(type);
@@ -528,7 +576,7 @@ escapeChars:
 				column += 2;
 			}
 		}
-		
+
 		public override void StartNode(AstNode node)
 		{
 			// Write out the indentation, so that overrides of this method
@@ -536,7 +584,7 @@ escapeChars:
 			// in the output.
 			WriteIndentation();
 		}
-		
+
 		public override void EndNode(AstNode node)
 		{
 		}

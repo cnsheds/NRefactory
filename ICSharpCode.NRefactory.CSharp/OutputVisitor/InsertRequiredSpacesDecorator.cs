@@ -1,14 +1,14 @@
 ﻿// Copyright (c) 2010-2013 AlphaSierraPapa for the SharpDevelop Team
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this
 // software and associated documentation files (the "Software"), to deal in the Software
 // without restriction, including without limitation the rights to use, copy, modify, merge,
 // publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
 // to whom the Software is furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all copies or
 // substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 // INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
 // PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
@@ -25,7 +25,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 		/// Used to insert the minimal amount of spaces so that the lexer recognizes the tokens that were written.
 		/// </summary>
 		LastWritten lastWritten;
-		
+
 		enum LastWritten
 		{
 			Whitespace,
@@ -37,12 +37,12 @@ namespace ICSharpCode.NRefactory.CSharp {
 			QuestionMark,
 			Division
 		}
-		
+
 		public InsertRequiredSpacesDecorator(TokenWriter writer)
 			: base(writer)
 		{
 		}
-		
+
 		public override void WriteIdentifier(Identifier identifier, object data)
 		{
 			if (identifier.IsVerbatim || CSharpOutputVisitor.IsKeyword(identifier.Name, identifier)) {
@@ -57,7 +57,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			base.WriteIdentifier(identifier, data);
 			lastWritten = LastWritten.KeywordOrIdentifier;
 		}
-		
+
 		public override void WriteKeyword(Role role, string keyword)
 		{
 			if (lastWritten == LastWritten.KeywordOrIdentifier) {
@@ -66,7 +66,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			base.WriteKeyword(role, keyword);
 			lastWritten = LastWritten.KeywordOrIdentifier;
 		}
-		
+
 		public override void WriteToken(Role role, string token, object data)
 		{
 			// Avoid that two +, - or ? tokens are combined into a ++, -- or ?? token.
@@ -97,19 +97,19 @@ namespace ICSharpCode.NRefactory.CSharp {
 				lastWritten = LastWritten.Other;
 			}
 		}
-		
+
 		public override void Space()
 		{
 			base.Space();
 			lastWritten = LastWritten.Whitespace;
 		}
-		
+
 		public override void NewLine()
 		{
 			base.NewLine();
 			lastWritten = LastWritten.Whitespace;
 		}
-		
+
 		public override void WriteComment(CommentType commentType, string content, CommentReference[] refs)
 		{
 			if (lastWritten == LastWritten.Division) {
@@ -120,15 +120,18 @@ namespace ICSharpCode.NRefactory.CSharp {
 			base.WriteComment(commentType, content, refs);
 			lastWritten = LastWritten.Whitespace;
 		}
-		
+
 		public override void WritePreProcessorDirective(PreProcessorDirectiveType type, string argument)
 		{
 			base.WritePreProcessorDirective(type, argument);
 			lastWritten = LastWritten.Whitespace;
 		}
-		
+
 		public override void WritePrimitiveValue(object value, object data = null, string literalValue = null)
 		{
+			if (lastWritten == LastWritten.KeywordOrIdentifier) {
+				Space();
+			}
 			base.WritePrimitiveValue(value, data, literalValue);
 			if (value == null || value is bool)
 				return;
@@ -156,7 +159,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 				lastWritten = LastWritten.Other;
 			}
 		}
-		
+
 		public override void WritePrimitiveType(string type)
 		{
 			if (lastWritten == LastWritten.KeywordOrIdentifier) {
