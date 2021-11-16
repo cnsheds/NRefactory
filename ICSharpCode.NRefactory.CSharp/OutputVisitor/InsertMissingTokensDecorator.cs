@@ -41,6 +41,8 @@ namespace ICSharpCode.NRefactory.CSharp {
 				currentList = new List<AstNode>();
 			} else if (node is Comment comment) {
 				comment.SetStartLocation(locationProvider.Location);
+			} else if (node is ErrorExpression error) {
+				error.Location = locationProvider.Location;
 			}
 			base.StartNode(node);
 		}
@@ -68,13 +70,19 @@ namespace ICSharpCode.NRefactory.CSharp {
 
 		public override void WriteToken(Role role, string token, object data)
 		{
-			EmptyStatement node = nodes.Peek().LastOrDefault() as EmptyStatement;
-			if (node == null) {
+			switch (nodes.Peek().LastOrDefault())
+			{
+			case EmptyStatement emptyStatement:
+				emptyStatement.Location = locationProvider.Location;
+				break;
+			case ErrorExpression errorExpression:
+				errorExpression.Location = locationProvider.Location;
+				break;
+			default:
 				CSharpTokenNode t = new CSharpTokenNode(locationProvider.Location, (TokenRole)role);
 				t.Role = role;
 				currentList.Add(t);
-			} else {
-				node.Location = locationProvider.Location;
+				break;
 			}
 			base.WriteToken(role, token, data);
 		}

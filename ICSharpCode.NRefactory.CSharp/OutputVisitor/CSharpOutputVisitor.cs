@@ -709,7 +709,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 					count = CANCEL_CHECK_LOOP_COUNT;
 				}
 				modifier.AcceptVisitor(this);
-				writer.Space();
+				Space();
 			}
 			// Needed if there are no modifiers so eg. a keyword (such as 'class') isn't written
 			// before the comment.
