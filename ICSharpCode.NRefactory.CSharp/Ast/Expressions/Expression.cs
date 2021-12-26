@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using dnlib.DotNet;
 using dnSpy.Contracts.Decompiler;
 using dnSpy.Contracts.Text;
 
@@ -127,19 +128,37 @@ namespace ICSharpCode.NRefactory.CSharp {
 				throw new ArgumentNullException("replaceFunction");
 			return (Expression)base.ReplaceWith(node => replaceFunction((Expression)node));
 		}
-		
+
 		#region Builder methods
+		public static string TryGetDisplayFieldName(FieldDef fieldDef) {
+			string DemangleName = fieldDef.Name;
+			if (fieldDef.IsStatic && fieldDef.HasFieldRVA && DemangleName.StartsWith("?")) {
+				if (fieldDef.FieldType.ReflectionName.StartsWith("$ArrayType$$$BY0")) {
+					if (fieldDef.FieldType.ReflectionName.EndsWith("$$CBD"))
+						DemangleName = "String";
+					else if (fieldDef.FieldType.ReflectionName.EndsWith("$$CB_W"))
+						DemangleName = "StringW";
+				}
+				DemangleName += "_" + fieldDef.RVA.ToString("X");
+			}
+
+			return DemangleName;
+		}
+
 		/// <summary>
 		/// Builds an member reference expression using this expression as target.
 		/// </summary>
-		public virtual MemberReferenceExpression Member(string memberName, object memberAnnotation)
-		{
+		public virtual MemberReferenceExpression Member(string memberName, object memberAnnotation) {
+			var fieldDef = memberAnnotation as FieldDef;
+			if (fieldDef != null) {
+				memberName = TryGetDisplayFieldName(fieldDef);
+			}
 			var id = Identifier.Create(memberName);
 			if (memberAnnotation != null)
 				id.AddAnnotation(memberAnnotation);
 			return new MemberReferenceExpression { Target = this, MemberNameToken = id };
 		}
-		
+
 		/// <summary>
 		/// Builds an indexer expression using this expression as target.
 		/// </summary>
