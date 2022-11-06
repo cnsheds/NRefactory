@@ -3027,6 +3027,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 		{
 			StartNode(primitiveType);
 			writer.WritePrimitiveType(primitiveType.Keyword);
+			isAfterSpace = false;
 			EndNode(primitiveType);
 		}
 
