@@ -1607,7 +1607,7 @@ namespace ICSharpCode.NRefactory.CSharp.Resolver
 					var addRR = memberLookup.Lookup(initializedObject, "Add", EmptyList<IType>.Instance, true);
 					var mgrr = addRR as MethodGroupResolveResult;
 					if (mgrr != null) {
-						OverloadResolution or = mgrr.PerformOverloadResolution(resolver.Compilation, addArguments, null, false, false, false, resolver.CheckForOverflow, resolver.conversions);
+						OverloadResolution or = mgrr.PerformOverloadResolution(resolver.Compilation, addArguments, null, false, false, false, false, resolver.CheckForOverflow, resolver.conversions);
 						var invocationRR = or.CreateResolveResult(initializedObject);
 						StoreResult(aie, invocationRR);
 						ProcessInvocationResult(null, aie.Elements, invocationRR);

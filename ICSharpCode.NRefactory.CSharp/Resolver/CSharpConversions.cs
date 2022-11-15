@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2010-2013 AlphaSierraPapa for the SharpDevelop Team
+// Copyright (c) 2010-2013 AlphaSierraPapa for the SharpDevelop Team
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this
 // software and associated documentation files (the "Software"), to deal in the Software
@@ -920,6 +920,15 @@ namespace ICSharpCode.NRefactory.CSharp.Resolver {
 			}
 		}
 
+		static IType UnderlyingTypeForConversion(IType type)
+		{
+			if (type.Kind == TypeKind.ByReference)
+			{
+				type = ((ByReferenceType)type).ElementType;
+			}
+			return NullableType.GetUnderlyingType(type);
+		}
+
 		List<OperatorInfo> GetApplicableConversionOperators(ResolveResult fromResult, IType fromType, IType toType, bool isExplicit)
 		{
 			// Find the candidate operators:
@@ -929,12 +938,16 @@ namespace ICSharpCode.NRefactory.CSharp.Resolver {
 			else
 				opFilter = m => m.IsStatic && m.IsOperator && m.Name == "op_Implicit" && m.Parameters.Count == 1;
 
-			var operators = NullableType.GetUnderlyingType(fromType).GetMethods(opFilter)
-				.Concat(NullableType.GetUnderlyingType(toType).GetMethods(opFilter)).Distinct();
+			var operators = UnderlyingTypeForConversion(fromType).GetMethods(opFilter)
+				.Concat(UnderlyingTypeForConversion(toType).GetMethods(opFilter)).Distinct();
 			// Determine whether one of them is applicable:
 			List<OperatorInfo> result = new List<OperatorInfo>();
 			foreach (IMethod op in operators) {
 				IType sourceType = op.Parameters[0].Type;
+				if (sourceType.Kind == TypeKind.ByReference && op.Parameters[0].IsIn && fromType.Kind != TypeKind.ByReference)
+				{
+					sourceType = ((ByReferenceType)sourceType).ElementType;
+				}
 				IType targetType = op.ReturnType;
 				// Try if the operator is applicable:
 				bool isApplicable;
@@ -1059,7 +1072,13 @@ namespace ICSharpCode.NRefactory.CSharp.Resolver {
 					args[i] = new ResolveResult(parameterType);
 				}
 			}
-			var or = rr.PerformOverloadResolution(compilation, args, allowExpandingParams: false, allowOptionalParameters: false, conversions: this);
+			var or = rr.PerformOverloadResolution(
+				compilation, args,
+				allowExpandingParams: false,
+				allowOptionalParameters: false,
+				allowImplicitIn: false,
+				conversions: this
+			);
 			if (or.FoundApplicableCandidate) {
 				IMethod method = (IMethod)or.GetBestCandidateWithSubstitutedTypeArguments();
 				var thisRR = rr.TargetResult as ThisResolveResult;
