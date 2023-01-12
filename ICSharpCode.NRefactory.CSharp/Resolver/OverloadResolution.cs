@@ -179,6 +179,11 @@ namespace ICSharpCode.NRefactory.CSharp.Resolver {
 		public bool AllowOptionalParameters { get; set; }
 
 		/// <summary>
+		/// Gets/Sets whether a value argument can be passed to an `in` reference parameter.
+		/// </summary>
+		public bool AllowImplicitIn { get; set; } = true;
+
+		/// <summary>
 		/// Gets/Sets whether ConversionResolveResults created by this OverloadResolution
 		/// instance apply overflow checking.
 		/// The default value is false.
@@ -409,8 +414,10 @@ namespace ICSharpCode.NRefactory.CSharp.Resolver {
 				}
 			} else {
 				TypeInference ti = new TypeInference(compilation, conversions);
+				IType[] parameterTypes = candidate.ArgumentToParameterMap
+												  .Select(parameterIndex => parameterIndex >= 0 ? candidate.ParameterTypes[parameterIndex] : SpecialType.UnknownType).ToArray();
 				bool success;
-				candidate.InferredTypes = ti.InferTypeArguments(candidate.TypeParameters, arguments, candidate.ParameterTypes, out success, classTypeArguments);
+				candidate.InferredTypes = ti.InferTypeArguments(candidate.TypeParameters, arguments, parameterTypes, out success, classTypeArguments);
 				if (!success)
 					candidate.AddError(OverloadResolutionErrors.TypeInferenceFailed);
 			}
@@ -573,12 +580,21 @@ namespace ICSharpCode.NRefactory.CSharp.Resolver {
 					continue;
 				}
 
+				var isIn = candidate.Parameters[parameterIndex].IsIn;
+				var isOut = candidate.Parameters[parameterIndex].IsOut;
+				var isRef = candidate.Parameters[parameterIndex].IsRef;
 				ByReferenceResolveResult brrr = arguments[i] as ByReferenceResolveResult;
 				if (brrr != null) {
-					if ((brrr.IsOut && !candidate.Parameters[parameterIndex].IsOut) || (brrr.IsRef && !candidate.Parameters[parameterIndex].IsRef) || (brrr.IsIn && !candidate.Parameters[parameterIndex].IsIn))
+					if ((brrr.IsOut && !isOut) || (brrr.IsRef && !isRef) || (brrr.IsIn && !isIn))
 						candidate.AddError(OverloadResolutionErrors.ParameterPassingModeMismatch);
 				} else {
-					if (candidate.Parameters[parameterIndex].IsOut || candidate.Parameters[parameterIndex].IsRef || candidate.Parameters[parameterIndex].IsIn)
+					// AllowImplicitIn: `in` parameters can be filled implicitly without `in` DirectionExpression
+					// IsExtensionMethodInvocation: `this ref` and `this in` parameters can be filled implicitly
+					if (((isIn && AllowImplicitIn) || (IsExtensionMethodInvocation && parameterIndex == 0 && (isIn || isRef))) && candidate.ParameterTypes[parameterIndex] is ByReferenceType brt) {
+						// Treat the parameter as if it was not declared "in" for the following steps
+						// (applicability + better function member)
+						candidate.ParameterTypes[parameterIndex] = brt.ElementType;
+					} else if (isOut || isRef || isIn)
 						candidate.AddError(OverloadResolutionErrors.ParameterPassingModeMismatch);
 				}
 				IType parameterType = candidate.ParameterTypes[parameterIndex];

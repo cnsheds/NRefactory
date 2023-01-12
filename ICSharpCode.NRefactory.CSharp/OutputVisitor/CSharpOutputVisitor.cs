@@ -1262,7 +1262,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			WriteToken(Roles.Dot, BoxedTextColor.Operator);
 			WriteIdentifier(memberReferenceExpression.MemberNameToken, CSharpMetadataTextColorProvider.Instance.GetColor(memberReferenceExpression.MemberNameToken.Annotation<object>() ?? memberReferenceExpression.Annotation<object>()));
 			WriteTypeArguments(memberReferenceExpression.TypeArguments, CodeBracesRangeFlags.AngleBrackets);
-			if (insertedNewLine && !(memberReferenceExpression.Parent is InvocationExpression)) {
+			if (insertedNewLine && !(memberReferenceExpression.Parent is InvocationExpression && memberReferenceExpression.Role == Roles.TargetExpression)) {
 				writer.Unindent();
 			}
 			EndNode(memberReferenceExpression);
@@ -3027,6 +3027,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 		{
 			StartNode(primitiveType);
 			writer.WritePrimitiveType(primitiveType.Keyword);
+			isAfterSpace = false;
 			EndNode(primitiveType);
 		}
 

@@ -1,14 +1,14 @@
 ﻿// Copyright (c) 2010-2013 AlphaSierraPapa for the SharpDevelop Team
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this
 // software and associated documentation files (the "Software"), to deal in the Software
 // without restriction, including without limitation the rights to use, copy, modify, merge,
 // publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
 // to whom the Software is furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all copies or
 // substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 // INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
 // PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
@@ -31,7 +31,7 @@ namespace ICSharpCode.NRefactory.CSharp.Resolver {
 	public class MethodListWithDeclaringType : List<IParameterizedMember>
 	{
 		readonly IType declaringType;
-		
+
 		/// <summary>
 		/// The declaring type.
 		/// </summary>
@@ -54,19 +54,19 @@ namespace ICSharpCode.NRefactory.CSharp.Resolver {
 		public IType DeclaringType {
 			get { return declaringType; }
 		}
-		
+
 		public MethodListWithDeclaringType(IType declaringType)
 		{
 			this.declaringType = declaringType;
 		}
-		
+
 		public MethodListWithDeclaringType(IType declaringType, IEnumerable<IParameterizedMember> methods)
 			: base(methods)
 		{
 			this.declaringType = declaringType;
 		}
 	}
-	
+
 	/// <summary>
 	/// Represents a group of methods.
 	/// A method reference used to create a delegate is resolved to a MethodGroupResolveResult.
@@ -79,7 +79,7 @@ namespace ICSharpCode.NRefactory.CSharp.Resolver {
 		readonly IList<IType> typeArguments;
 		readonly ResolveResult targetResult;
 		readonly string methodName;
-		
+
 		public MethodGroupResolveResult(ResolveResult targetResult, string methodName, IList<MethodListWithDeclaringType> methods, IList<IType> typeArguments) : base(SpecialType.UnknownType)
 		{
 			if (methods == null)
@@ -89,28 +89,28 @@ namespace ICSharpCode.NRefactory.CSharp.Resolver {
 			this.methodLists = methods;
 			this.typeArguments = typeArguments ?? EmptyList<IType>.Instance;
 		}
-		
+
 		/// <summary>
 		/// Gets the resolve result for the target object.
 		/// </summary>
 		public ResolveResult TargetResult {
 			get { return targetResult; }
 		}
-		
+
 		/// <summary>
 		/// Gets the type of the reference to the target object.
 		/// </summary>
 		public IType TargetType {
 			get { return targetResult != null ? targetResult.Type : SpecialType.UnknownType; }
 		}
-		
+
 		/// <summary>
 		/// Gets the name of the methods in this group.
 		/// </summary>
 		public string MethodName {
 			get { return methodName; }
 		}
-		
+
 		/// <summary>
 		/// Gets the methods that were found.
 		/// This list does not include extension methods.
@@ -118,7 +118,7 @@ namespace ICSharpCode.NRefactory.CSharp.Resolver {
 		public IEnumerable<IMethod> Methods {
 			get { return methodLists.SelectMany(m => m.Cast<IMethod>()); }
 		}
-		
+
 		/// <summary>
 		/// Gets the methods that were found, grouped by their declaring type.
 		/// This list does not include extension methods.
@@ -127,23 +127,23 @@ namespace ICSharpCode.NRefactory.CSharp.Resolver {
 		public IEnumerable<MethodListWithDeclaringType> MethodsGroupedByDeclaringType {
 			get { return methodLists; }
 		}
-		
+
 		/// <summary>
 		/// Gets the type arguments that were explicitly provided.
 		/// </summary>
 		public IList<IType> TypeArguments {
 			get { return typeArguments; }
 		}
-		
+
 		/// <summary>
 		/// List of extension methods, used to avoid re-calculating it in ResolveInvocation() when it was already
 		/// calculated by ResolveMemberAccess().
 		/// </summary>
 		internal List<List<IMethod>> extensionMethods;
-		
+
 		// the resolver is used to fetch extension methods on demand
 		internal CSharpResolver resolver;
-		
+
 		/// <summary>
 		/// Gets all candidate extension methods.
 		/// Note: this includes candidates that are not eligible due to an inapplicable
@@ -171,7 +171,7 @@ namespace ICSharpCode.NRefactory.CSharp.Resolver {
 			}
 			return extensionMethods ?? Enumerable.Empty<IEnumerable<IMethod>>();
 		}
-		
+
 		/// <summary>
 		/// Gets the eligible extension methods.
 		/// </summary>
@@ -210,34 +210,36 @@ namespace ICSharpCode.NRefactory.CSharp.Resolver {
 			}
 			return result;
 		}
-		
+
 		public override string ToString()
 		{
 			return string.Format("[{0} with {1} method(s)]", GetType().Name, this.Methods.Count());
 		}
-		
+
 		public OverloadResolution PerformOverloadResolution(ICompilation compilation, ResolveResult[] arguments, string[] argumentNames = null,
 		                                                    bool allowExtensionMethods = true,
-		                                                    bool allowExpandingParams = true, 
+		                                                    bool allowExpandingParams = true,
 		                                                    bool allowOptionalParameters = true,
+															bool allowImplicitIn = true,
 		                                                    bool checkForOverflow = false, CSharpConversions conversions = null)
 		{
 			Log.WriteLine("Performing overload resolution for " + this);
 			Log.WriteCollection("  Arguments: ", arguments);
-			
+
 			var typeArgumentArray = this.TypeArguments.ToArray();
 			OverloadResolution or = new OverloadResolution(compilation, arguments, argumentNames, typeArgumentArray, conversions);
 			or.AllowExpandingParams = allowExpandingParams;
 			or.AllowOptionalParameters = allowOptionalParameters;
 			or.CheckForOverflow = checkForOverflow;
-			
+			or.AllowImplicitIn = allowImplicitIn;
+
 			or.AddMethodLists(methodLists);
-			
+
 			if (allowExtensionMethods && !or.FoundApplicableCandidate) {
 				// No applicable match found, so let's try extension methods.
-				
+
 				var extensionMethods = this.GetExtensionMethods();
-				
+
 				if (extensionMethods.Any()) {
 					Log.WriteLine("No candidate is applicable, trying {0} extension methods groups...", extensionMethods.Count());
 					ResolveResult[] extArguments = new ResolveResult[arguments.Length + 1];
@@ -253,7 +255,8 @@ namespace ICSharpCode.NRefactory.CSharp.Resolver {
 					extOr.AllowOptionalParameters = allowOptionalParameters;
 					extOr.IsExtensionMethodInvocation = true;
 					extOr.CheckForOverflow = checkForOverflow;
-					
+					extOr.AllowImplicitIn = allowImplicitIn;
+
 					foreach (var g in extensionMethods) {
 						foreach (var method in g) {
 							Log.Indent();
@@ -276,7 +279,7 @@ namespace ICSharpCode.NRefactory.CSharp.Resolver {
 			Log.WriteLine("Overload resolution finished, best candidate is {0}.", or.GetBestCandidateWithSubstitutedTypeArguments());
 			return or;
 		}
-		
+
 		public override IEnumerable<ResolveResult> GetChildResults()
 		{
 			if (targetResult != null)
