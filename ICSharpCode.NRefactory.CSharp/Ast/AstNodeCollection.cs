@@ -83,9 +83,9 @@ namespace ICSharpCode.NRefactory.CSharp
 			}
 		}
 
-		public void AddRange(ICollection<T> nodes)
+		public void AddRange(IList<T> nodes)
 		{
-			// Fast overload for ICollection<T> - we don't need to create a copy
+			// Fast overload for IList<T> - we don't need to create a copy
 			if (nodes != null) {
 				foreach (T node in nodes)
 					Add(node);
