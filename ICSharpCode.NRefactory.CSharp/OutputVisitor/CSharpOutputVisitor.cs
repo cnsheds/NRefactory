@@ -2981,6 +2981,28 @@ namespace ICSharpCode.NRefactory.CSharp {
 			EndNode(memberType);
 		}
 
+		public virtual void VisitFunctionPointerType(FunctionPointerAstType functionPointerType)
+		{
+			StartNode(functionPointerType);
+			WriteKeyword(Roles.DelegateKeyword);
+			WriteToken(FunctionPointerAstType.PointerRole, BoxedTextColor.Operator);
+			if (functionPointerType.HasUnmanagedCallingConvention) {
+				Space();
+				WriteKeyword("unmanaged");
+			}
+
+			BraceHelper braceHelper;
+			if (functionPointerType.CallingConventions.Any()) {
+				braceHelper = BraceHelper.LeftBracket(this, CodeBracesRangeFlags.SquareBrackets);
+				WriteCommaSeparatedList(functionPointerType.CallingConventions);
+				braceHelper.RightBracket();
+			}
+			braceHelper = BraceHelper.LeftChevron(this, CodeBracesRangeFlags.AngleBrackets);
+			WriteCommaSeparatedList(functionPointerType.Parameters.Concat<AstNode>(new[] { functionPointerType.ReturnType }));
+			braceHelper.RightChevron();
+			EndNode(functionPointerType);
+		}
+
 		public virtual void VisitComposedType(ComposedType composedType)
 		{
 			StartNode(composedType);

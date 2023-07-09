@@ -3367,6 +3367,14 @@ namespace ICSharpCode.NRefactory.CSharp.Resolver
 			return rr;
 		}
 
+		ResolveResult IAstVisitor<ResolveResult>.VisitFunctionPointerType(FunctionPointerAstType functionPointerType) {
+			if (!resolverEnabled) {
+				ScanChildren(functionPointerType);
+				return null;
+			}
+			return null;
+		}
+
 		ResolveResult IAstVisitor<ResolveResult>.VisitComposedType(ComposedType composedType)
 		{
 			if (!resolverEnabled) {
