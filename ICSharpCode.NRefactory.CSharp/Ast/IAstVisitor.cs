@@ -1,14 +1,14 @@
 ﻿// Copyright (c) 2010-2013 AlphaSierraPapa for the SharpDevelop Team
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this
 // software and associated documentation files (the "Software"), to deal in the Software
 // without restriction, including without limitation the rights to use, copy, modify, merge,
 // publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
 // to whom the Software is furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all copies or
 // substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 // INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
 // PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
@@ -68,7 +68,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 		void VisitQueryOrdering(QueryOrdering queryOrdering);
 		void VisitQuerySelectClause(QuerySelectClause querySelectClause);
 		void VisitQueryGroupClause(QueryGroupClause queryGroupClause);
-		
+
 		void VisitAttribute(Attribute attribute);
 		void VisitAttributeSection(AttributeSection attributeSection);
 		void VisitDelegateDeclaration(DelegateDeclaration delegateDeclaration);
@@ -77,7 +77,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 		void VisitUsingAliasDeclaration(UsingAliasDeclaration usingAliasDeclaration);
 		void VisitUsingDeclaration(UsingDeclaration usingDeclaration);
 		void VisitExternAliasDeclaration(ExternAliasDeclaration externAliasDeclaration);
-		
+
 		void VisitBlockStatement(BlockStatement blockStatement);
 		void VisitBreakStatement(BreakStatement breakStatement);
 		void VisitCheckedStatement(CheckedStatement checkedStatement);
@@ -108,7 +108,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 		void VisitWhileStatement(WhileStatement whileStatement);
 		void VisitYieldBreakStatement(YieldBreakStatement yieldBreakStatement);
 		void VisitYieldReturnStatement(YieldReturnStatement yieldReturnStatement);
-		
+
 		void VisitAccessor(Accessor accessor);
 		void VisitConstructorDeclaration(ConstructorDeclaration constructorDeclaration);
 		void VisitConstructorInitializer(ConstructorInitializer constructorInitializer);
@@ -125,31 +125,32 @@ namespace ICSharpCode.NRefactory.CSharp {
 		void VisitVariableInitializer(VariableInitializer variableInitializer);
 		void VisitFixedFieldDeclaration(FixedFieldDeclaration fixedFieldDeclaration);
 		void VisitFixedVariableInitializer(FixedVariableInitializer fixedVariableInitializer);
-		
+
 		void VisitSyntaxTree(SyntaxTree syntaxTree);
 		void VisitSimpleType(SimpleType simpleType);
 		void VisitMemberType(MemberType memberType);
+		void VisitFunctionPointerType(FunctionPointerAstType functionPointerType);
 		void VisitComposedType(ComposedType composedType);
 		void VisitArraySpecifier(ArraySpecifier arraySpecifier);
 		void VisitPrimitiveType(PrimitiveType primitiveType);
-		
+
 		void VisitComment(Comment comment);
 		void VisitNewLine(NewLineNode newLineNode);
 		void VisitWhitespace(WhitespaceNode whitespaceNode);
 		void VisitText(TextNode textNode);
 		void VisitPreProcessorDirective(PreProcessorDirective preProcessorDirective);
 		void VisitDocumentationReference(DocumentationReference documentationReference);
-		
+
 		void VisitTypeParameterDeclaration(TypeParameterDeclaration typeParameterDeclaration);
 		void VisitConstraint(Constraint constraint);
 		void VisitCSharpTokenNode(CSharpTokenNode cSharpTokenNode);
 		void VisitIdentifier(Identifier identifier);
-		
+
 		void VisitNullNode(AstNode nullNode);
 		void VisitErrorNode(AstNode errorNode);
 		void VisitPatternPlaceholder(AstNode placeholder, PatternMatching.Pattern pattern);
 	}
-	
+
 	/// <summary>
 	/// AST visitor.
 	/// </summary>
@@ -200,7 +201,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 		S VisitQueryOrdering(QueryOrdering queryOrdering);
 		S VisitQuerySelectClause(QuerySelectClause querySelectClause);
 		S VisitQueryGroupClause(QueryGroupClause queryGroupClause);
-		
+
 		S VisitAttribute(Attribute attribute);
 		S VisitAttributeSection(AttributeSection attributeSection);
 		S VisitDelegateDeclaration(DelegateDeclaration delegateDeclaration);
@@ -209,7 +210,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 		S VisitUsingAliasDeclaration(UsingAliasDeclaration usingAliasDeclaration);
 		S VisitUsingDeclaration(UsingDeclaration usingDeclaration);
 		S VisitExternAliasDeclaration(ExternAliasDeclaration externAliasDeclaration);
-		
+
 		S VisitBlockStatement(BlockStatement blockStatement);
 		S VisitBreakStatement(BreakStatement breakStatement);
 		S VisitCheckedStatement(CheckedStatement checkedStatement);
@@ -240,7 +241,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 		S VisitWhileStatement(WhileStatement whileStatement);
 		S VisitYieldBreakStatement(YieldBreakStatement yieldBreakStatement);
 		S VisitYieldReturnStatement(YieldReturnStatement yieldReturnStatement);
-		
+
 		S VisitAccessor(Accessor accessor);
 		S VisitConstructorDeclaration(ConstructorDeclaration constructorDeclaration);
 		S VisitConstructorInitializer(ConstructorInitializer constructorInitializer);
@@ -257,31 +258,32 @@ namespace ICSharpCode.NRefactory.CSharp {
 		S VisitVariableInitializer(VariableInitializer variableInitializer);
 		S VisitFixedFieldDeclaration(FixedFieldDeclaration fixedFieldDeclaration);
 		S VisitFixedVariableInitializer(FixedVariableInitializer fixedVariableInitializer);
-		
+
 		S VisitSyntaxTree(SyntaxTree syntaxTree);
 		S VisitSimpleType(SimpleType simpleType);
 		S VisitMemberType(MemberType memberType);
+		S VisitFunctionPointerType(FunctionPointerAstType functionPointerType);
 		S VisitComposedType(ComposedType composedType);
 		S VisitArraySpecifier(ArraySpecifier arraySpecifier);
 		S VisitPrimitiveType(PrimitiveType primitiveType);
-		
+
 		S VisitComment(Comment comment);
 		S VisitWhitespace(WhitespaceNode whitespaceNode);
 		S VisitText(TextNode textNode);
 		S VisitNewLine(NewLineNode newLineNode);
 		S VisitPreProcessorDirective(PreProcessorDirective preProcessorDirective);
 		S VisitDocumentationReference(DocumentationReference documentationReference);
-		
+
 		S VisitTypeParameterDeclaration(TypeParameterDeclaration typeParameterDeclaration);
 		S VisitConstraint(Constraint constraint);
 		S VisitCSharpTokenNode(CSharpTokenNode cSharpTokenNode);
 		S VisitIdentifier(Identifier identifier);
-		
+
 		S VisitNullNode(AstNode nullNode);
 		S VisitErrorNode(AstNode errorNode);
 		S VisitPatternPlaceholder(AstNode placeholder, PatternMatching.Pattern pattern);
 	}
-	
+
 	/// <summary>
 	/// AST visitor.
 	/// </summary>
@@ -332,7 +334,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 		S VisitQueryOrdering(QueryOrdering queryOrdering, T data);
 		S VisitQuerySelectClause(QuerySelectClause querySelectClause, T data);
 		S VisitQueryGroupClause(QueryGroupClause queryGroupClause, T data);
-		
+
 		S VisitAttribute(Attribute attribute, T data);
 		S VisitAttributeSection(AttributeSection attributeSection, T data);
 		S VisitDelegateDeclaration(DelegateDeclaration delegateDeclaration, T data);
@@ -341,7 +343,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 		S VisitUsingAliasDeclaration(UsingAliasDeclaration usingAliasDeclaration, T data);
 		S VisitUsingDeclaration(UsingDeclaration usingDeclaration, T data);
 		S VisitExternAliasDeclaration(ExternAliasDeclaration externAliasDeclaration, T data);
-		
+
 		S VisitBlockStatement(BlockStatement blockStatement, T data);
 		S VisitBreakStatement(BreakStatement breakStatement, T data);
 		S VisitCheckedStatement(CheckedStatement checkedStatement, T data);
@@ -372,7 +374,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 		S VisitWhileStatement(WhileStatement whileStatement, T data);
 		S VisitYieldBreakStatement(YieldBreakStatement yieldBreakStatement, T data);
 		S VisitYieldReturnStatement(YieldReturnStatement yieldReturnStatement, T data);
-		
+
 		S VisitAccessor(Accessor accessor, T data);
 		S VisitConstructorDeclaration(ConstructorDeclaration constructorDeclaration, T data);
 		S VisitConstructorInitializer(ConstructorInitializer constructorInitializer, T data);
@@ -389,26 +391,27 @@ namespace ICSharpCode.NRefactory.CSharp {
 		S VisitVariableInitializer(VariableInitializer variableInitializer, T data);
 		S VisitFixedFieldDeclaration(FixedFieldDeclaration fixedFieldDeclaration, T data);
 		S VisitFixedVariableInitializer(FixedVariableInitializer fixedVariableInitializer, T data);
-		
+
 		S VisitSyntaxTree(SyntaxTree syntaxTree, T data);
 		S VisitSimpleType(SimpleType simpleType, T data);
 		S VisitMemberType(MemberType memberType, T data);
+		S VisitFunctionPointerType(FunctionPointerAstType functionPointerType, T data);
 		S VisitComposedType(ComposedType composedType, T data);
 		S VisitArraySpecifier(ArraySpecifier arraySpecifier, T data);
 		S VisitPrimitiveType(PrimitiveType primitiveType, T data);
-		
+
 		S VisitComment(Comment comment, T data);
 		S VisitNewLine(NewLineNode newLineNode, T data);
 		S VisitWhitespace(WhitespaceNode whitespaceNode, T data);
 		S VisitText(TextNode textNode, T data);
 		S VisitPreProcessorDirective(PreProcessorDirective preProcessorDirective, T data);
 		S VisitDocumentationReference(DocumentationReference documentationReference, T data);
-		
+
 		S VisitTypeParameterDeclaration(TypeParameterDeclaration typeParameterDeclaration, T data);
 		S VisitConstraint(Constraint constraint, T data);
 		S VisitCSharpTokenNode(CSharpTokenNode cSharpTokenNode, T data);
 		S VisitIdentifier(Identifier identifier, T data);
-		
+
 		S VisitNullNode(AstNode nullNode, T data);
 		S VisitErrorNode(AstNode errorNode, T data);
 		S VisitPatternPlaceholder(AstNode placeholder, PatternMatching.Pattern pattern, T data);
