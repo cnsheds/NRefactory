@@ -56,11 +56,14 @@ namespace ICSharpCode.NRefactory.CSharp {
 				foreach (var removable in node.Children.Where(n => n is CSharpTokenNode)) {
 					removable.Remove();
 				}
-				foreach (var child in currentList) {
+
+				for (int i = 0; i < currentList.Count; i++) {
+					var child = currentList[i];
 					System.Diagnostics.Debug.Assert(child.Parent == null || node == child.Parent);
 					child.Remove();
 					node.AddChildWithExistingRole(child);
 				}
+
 				currentList = nodes.Pop();
 			} else if (node is Comment comment) {
 				comment.SetEndLocation(locationProvider.Location);
