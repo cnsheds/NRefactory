@@ -1,14 +1,14 @@
 ﻿// Copyright (c) 2010-2013 AlphaSierraPapa for the SharpDevelop Team
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this
 // software and associated documentation files (the "Software"), to deal in the Software
 // without restriction, including without limitation the rights to use, copy, modify, merge,
 // publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
 // to whom the Software is furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all copies or
 // substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 // INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
 // PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
@@ -35,23 +35,23 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 		HashSet<ControlFlowNode> visitedNodes = new HashSet<ControlFlowNode>();
 		Stack<ControlFlowNode> stack = new Stack<ControlFlowNode>();
 		RecursiveDetectorVisitor recursiveDetectorVisitor = null;
-		
+
 		private ReachabilityAnalysis() {}
-		
+
 		public static ReachabilityAnalysis Create(Statement statement, CSharpAstResolver resolver = null, RecursiveDetectorVisitor recursiveDetectorVisitor = null, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			var cfgBuilder = new ControlFlowGraphBuilder();
 			var cfg = cfgBuilder.BuildControlFlowGraph(statement, resolver, cancellationToken);
 			return Create(cfg, recursiveDetectorVisitor, cancellationToken);
 		}
-		
+
 		internal static ReachabilityAnalysis Create(Statement statement, Func<AstNode, CancellationToken, ResolveResult> resolver, CSharpTypeResolveContext typeResolveContext, CancellationToken cancellationToken)
 		{
 			var cfgBuilder = new ControlFlowGraphBuilder();
 			var cfg = cfgBuilder.BuildControlFlowGraph(statement, resolver, typeResolveContext, cancellationToken);
 			return Create(cfg, null, cancellationToken);
 		}
-		
+
 		public static ReachabilityAnalysis Create(IList<ControlFlowNode> controlFlowGraph, RecursiveDetectorVisitor recursiveDetectorVisitor = null, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			if (controlFlowGraph == null)
@@ -70,7 +70,7 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 			ra.visitedNodes = null;
 			return ra;
 		}
-		
+
 		void MarkReachable(ControlFlowNode node)
 		{
 			if (node.PreviousStatement != null) {
@@ -85,7 +85,9 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 					return;
 				}
 			}
-			foreach (var edge in node.Outgoing) {
+
+			for (int i = 0; i < node.Outgoing.Count; i++) {
+				var edge = node.Outgoing[i];
 				if (visitedNodes.Add(edge.To))
 					stack.Push(edge.To);
 			}
@@ -95,16 +97,16 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 		{
 			return recursiveDetectorVisitor != null && statement.AcceptVisitor(recursiveDetectorVisitor);
 		}
-		
+
 		public IEnumerable<Statement> ReachableStatements {
 			get { return reachableStatements; }
 		}
-		
+
 		public bool IsReachable(Statement statement)
 		{
 			return reachableStatements.Contains(statement);
 		}
-		
+
 		public bool IsEndpointReachable(Statement statement)
 		{
 			return reachableEndPoints.Contains(statement);

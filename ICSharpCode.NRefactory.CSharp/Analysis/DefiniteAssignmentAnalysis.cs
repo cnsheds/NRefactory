@@ -1,14 +1,14 @@
 ﻿// Copyright (c) 2010-2013 AlphaSierraPapa for the SharpDevelop Team
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this
 // software and associated documentation files (the "Software"), to deal in the Software
 // without restriction, including without limitation the rights to use, copy, modify, merge,
 // publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
 // to whom the Software is furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all copies or
 // substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 // INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
 // PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
@@ -54,7 +54,7 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 		/// </summary>
 		CodeUnreachable
 	}
-	
+
 	/// <summary>
 	/// Implements the C# definite assignment analysis (C# 4.0 Spec: §5.3 Definite assignment)
 	/// </summary>
@@ -64,13 +64,13 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 		{
 			public int Index;
 			public DefiniteAssignmentStatus NodeStatus;
-			
+
 			public DefiniteAssignmentNode(Statement previousStatement, Statement nextStatement, ControlFlowNodeType type)
 				: base(previousStatement, nextStatement, type)
 			{
 			}
 		}
-		
+
 		sealed class DerivedControlFlowGraphBuilder : ControlFlowGraphBuilder
 		{
 			protected override ControlFlowNode CreateNode(Statement previousStatement, Statement nextStatement, ControlFlowNodeType type)
@@ -78,7 +78,7 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 				return new DefiniteAssignmentNode(previousStatement, nextStatement, type);
 			}
 		}
-		
+
 		readonly DefiniteAssignmentVisitor visitor = new DefiniteAssignmentVisitor();
 		readonly List<DefiniteAssignmentNode> allNodes = new List<DefiniteAssignmentNode>();
 		readonly Dictionary<Statement, DefiniteAssignmentNode> beginNodeDict = new Dictionary<Statement, DefiniteAssignmentNode>();
@@ -86,21 +86,21 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 		readonly Dictionary<Statement, DefiniteAssignmentNode> conditionNodeDict = new Dictionary<Statement, DefiniteAssignmentNode>();
 		readonly CSharpAstResolver resolver;
 		Dictionary<ControlFlowEdge, DefiniteAssignmentStatus> edgeStatus = new Dictionary<ControlFlowEdge, DefiniteAssignmentStatus>();
-		
+
 		string variableName;
 		List<IdentifierExpression> unassignedVariableUses = new List<IdentifierExpression>();
 		int analyzedRangeStart, analyzedRangeEnd;
 		CancellationToken analysisCancellationToken;
-		
+
 		Queue<DefiniteAssignmentNode> nodesWithModifiedInput = new Queue<DefiniteAssignmentNode>();
-		
+
 		public DefiniteAssignmentAnalysis(Statement rootStatement, CancellationToken cancellationToken)
 			: this(rootStatement,
 			       new CSharpAstResolver(new CSharpResolver(MinimalCorlib.Instance.CreateCompilation()), rootStatement),
 			       cancellationToken)
 		{
 		}
-		
+
 		public DefiniteAssignmentAnalysis(Statement rootStatement, CSharpAstResolver resolver, CancellationToken cancellationToken)
 		{
 			if (rootStatement == null)
@@ -108,7 +108,7 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 			if (resolver == null)
 				throw new ArgumentNullException("resolver");
 			this.resolver = resolver;
-			
+
 			visitor.analysis = this;
 			DerivedControlFlowGraphBuilder cfgBuilder = new DerivedControlFlowGraphBuilder();
 			if (resolver.TypeResolveContext.Compilation.MainAssembly.UnresolvedAssembly is MinimalCorlib) {
@@ -138,11 +138,11 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 			// Verify that we put all nodes into the dictionaries:
 			Debug.Assert(rootStatement.DescendantsAndSelf.OfType<Statement>().All(stmt => beginNodeDict.ContainsKey(stmt)));
 			Debug.Assert(rootStatement.DescendantsAndSelf.OfType<Statement>().All(stmt => endNodeDict.ContainsKey(stmt)));
-			
+
 			this.analyzedRangeStart = 0;
 			this.analyzedRangeEnd = allNodes.Count - 1;
 		}
-		
+
 		void InsertAnonymousMethods(int insertPos, AstNode node, ControlFlowGraphBuilder cfgBuilder, CancellationToken cancellationToken)
 		{
 			// Ignore any statements, as those have their own ControlFlowNode and get handled separately
@@ -164,7 +164,7 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 				InsertAnonymousMethods(insertPos, child, cfgBuilder, cancellationToken);
 			}
 		}
-		
+
 		/// <summary>
 		/// Gets the unassigned usages of the previously analyzed variable.
 		/// </summary>
@@ -173,7 +173,7 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 				return unassignedVariableUses.AsReadOnly();
 			}
 		}
-		
+
 		/// <summary>
 		/// Sets the range of statements to be analyzed.
 		/// This method can be used to restrict the analysis to only a part of the method.
@@ -192,7 +192,7 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 			this.analyzedRangeStart = startIndex;
 			this.analyzedRangeEnd = endIndex;
 		}
-		
+
 		public void Analyze(string variable, CancellationToken cancellationToken, DefiniteAssignmentStatus initialStatus = DefiniteAssignmentStatus.PotentiallyAssigned)
 		{
 			this.analysisCancellationToken = cancellationToken;
@@ -200,12 +200,13 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 			try {
 				// Reset the status:
 				unassignedVariableUses.Clear();
-				foreach (DefiniteAssignmentNode node in allNodes) {
+				for (int i = 0; i < allNodes.Count; i++) {
+					var node = allNodes[i];
 					node.NodeStatus = DefiniteAssignmentStatus.CodeUnreachable;
-					foreach (ControlFlowEdge edge in node.Outgoing)
-						edgeStatus[edge] = DefiniteAssignmentStatus.CodeUnreachable;
+					for (int j = 0; j < node.Outgoing.Count; j++)
+						edgeStatus[node.Outgoing[j]] = DefiniteAssignmentStatus.CodeUnreachable;
 				}
-				
+
 				ChangeNodeStatus(allNodes[analyzedRangeStart], initialStatus);
 				// Iterate as long as the input status of some nodes is changing:
 				int count = 0;
@@ -217,9 +218,9 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 					}
 					DefiniteAssignmentNode node = nodesWithModifiedInput.Dequeue();
 					DefiniteAssignmentStatus inputStatus = DefiniteAssignmentStatus.CodeUnreachable;
-					foreach (ControlFlowEdge edge in node.Incoming) {
-						inputStatus = MergeStatus(inputStatus, edgeStatus[edge]);
-					}
+					for (int i = 0; i < node.Incoming.Count; i++)
+						inputStatus = MergeStatus(inputStatus, edgeStatus[node.Incoming[i]]);
+
 					ChangeNodeStatus(node, inputStatus);
 				}
 			} finally {
@@ -227,22 +228,22 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 				this.variableName = null;
 			}
 		}
-		
+
 		public DefiniteAssignmentStatus GetStatusBefore(Statement statement)
 		{
 			return beginNodeDict[statement].NodeStatus;
 		}
-		
+
 		public DefiniteAssignmentStatus GetStatusAfter(Statement statement)
 		{
 			return endNodeDict[statement].NodeStatus;
 		}
-		
+
 		public DefiniteAssignmentStatus GetStatusBeforeLoopCondition(Statement statement)
 		{
 			return conditionNodeDict[statement].NodeStatus;
 		}
-		
+
 		/// <summary>
 		/// Exports the CFG. This method is intended to help debugging issues related to definite assignment.
 		/// </summary>
@@ -290,14 +291,14 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 			}
 			return g;
 		}
-		
+
 		static DefiniteAssignmentStatus MergeStatus(DefiniteAssignmentStatus a, DefiniteAssignmentStatus b)
 		{
 			// The result will be DefinitelyAssigned if at least one incoming edge is DefinitelyAssigned and all others are unreachable.
 			// The result will be DefinitelyUnassigned if at least one incoming edge is DefinitelyUnassigned and all others are unreachable.
 			// The result will be Unreachable if all incoming edges are unreachable.
 			// Otherwise, the result will be PotentiallyAssigned.
-			
+
 			if (a == b)
 				return a;
 			else if (a == DefiniteAssignmentStatus.CodeUnreachable)
@@ -307,7 +308,7 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 			else
 				return DefiniteAssignmentStatus.PotentiallyAssigned;
 		}
-		
+
 		void ChangeNodeStatus (DefiniteAssignmentNode node, DefiniteAssignmentStatus inputStatus)
 		{
 			if (node.NodeStatus == inputStatus)
@@ -335,11 +336,15 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 					&& (outputStatus == DefiniteAssignmentStatus.DefinitelyAssigned || outputStatus == DefiniteAssignmentStatus.PotentiallyAssigned)) {
 					TryCatchStatement tryFinally = (TryCatchStatement)node.PreviousStatement.Parent;
 					// Changing the status on a finally block potentially changes the status of all edges leaving that finally block:
-					foreach (ControlFlowEdge edge in allNodes.SelectMany(n => n.Outgoing)) {
-						if (edge.IsLeavingTryFinally && edge.TryFinallyStatements.Contains (tryFinally)) {
-							DefiniteAssignmentStatus s = edgeStatus [edge];
-							if (s == DefiniteAssignmentStatus.PotentiallyAssigned) {
-								ChangeEdgeStatus (edge, outputStatus);
+					for (int i = 0; i < allNodes.Count; i++) {
+						var n = allNodes[i];
+						for (int j = 0; j < n.Outgoing.Count; j++) {
+							var edge = n.Outgoing[j];
+							if (edge.IsLeavingTryFinally && edge.TryFinallyStatements.Contains(tryFinally)) {
+								DefiniteAssignmentStatus s = edgeStatus[edge];
+								if (s == DefiniteAssignmentStatus.PotentiallyAssigned) {
+									ChangeEdgeStatus(edge, outputStatus);
+								}
 							}
 						}
 					}
@@ -359,25 +364,30 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 							outputStatus = inputStatus;
 						else
 							outputStatus = condition.AcceptVisitor(visitor, inputStatus);
-						foreach (ControlFlowEdge edge in node.Outgoing) {
-							if (edge.Type == ControlFlowEdgeType.ConditionTrue && outputStatus == DefiniteAssignmentStatus.AssignedAfterTrueExpression) {
+						for (int i = 0; i < node.Outgoing.Count; i++) {
+							var edge = node.Outgoing[i];
+							if (edge.Type == ControlFlowEdgeType.ConditionTrue &&
+								outputStatus == DefiniteAssignmentStatus.AssignedAfterTrueExpression) {
 								ChangeEdgeStatus(edge, DefiniteAssignmentStatus.DefinitelyAssigned);
-							} else if (edge.Type == ControlFlowEdgeType.ConditionFalse && outputStatus == DefiniteAssignmentStatus.AssignedAfterFalseExpression) {
+							}
+							else if (edge.Type == ControlFlowEdgeType.ConditionFalse &&
+									 outputStatus == DefiniteAssignmentStatus.AssignedAfterFalseExpression) {
 								ChangeEdgeStatus(edge, DefiniteAssignmentStatus.DefinitelyAssigned);
-							} else {
+							}
+							else {
 								ChangeEdgeStatus(edge, CleanSpecialValues(outputStatus));
 							}
 						}
+
 						return;
-					}
-				default:
-					throw new InvalidOperationException();
+				}
+			default:
+				throw new InvalidOperationException();
 			}
-			foreach (ControlFlowEdge edge in node.Outgoing) {
-				ChangeEdgeStatus(edge, outputStatus);
-			}
+			for (int i = 0; i < node.Outgoing.Count; i++)
+				ChangeEdgeStatus(node.Outgoing[i], outputStatus);
 		}
-		
+
 		void ChangeEdgeStatus(ControlFlowEdge edge, DefiniteAssignmentStatus newStatus)
 		{
 			DefiniteAssignmentStatus oldStatus = edgeStatus[edge];
@@ -394,7 +404,7 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 			// Note that the status can change from DefinitelyAssigned
 			// back to PotentiallyAssigned as unreachable input edges are
 			// discovered to be reachable.
-			
+
 			edgeStatus[edge] = newStatus;
 			DefiniteAssignmentNode targetNode = (DefiniteAssignmentNode)edge.To;
 			if (analyzedRangeStart <= targetNode.Index && targetNode.Index <= analyzedRangeEnd) {
@@ -404,7 +414,7 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 				nodesWithModifiedInput.Enqueue(targetNode);
 			}
 		}
-		
+
 		/// <summary>
 		/// Evaluates an expression.
 		/// </summary>
@@ -413,7 +423,7 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 		{
 			return resolver.Resolve(expr, analysisCancellationToken);
 		}
-		
+
 		/// <summary>
 		/// Evaluates an expression.
 		/// </summary>
@@ -426,7 +436,7 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 			else
 				return null;
 		}
-		
+
 		static DefiniteAssignmentStatus CleanSpecialValues(DefiniteAssignmentStatus status)
 		{
 			if (status == DefiniteAssignmentStatus.AssignedAfterTrueExpression)
@@ -436,11 +446,11 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 			else
 				return status;
 		}
-		
+
 		sealed class DefiniteAssignmentVisitor : DepthFirstAstVisitor<DefiniteAssignmentStatus, DefiniteAssignmentStatus>
 		{
 			internal DefiniteAssignmentAnalysis analysis;
-			
+
 			// The general approach for unknown nodes is to pass the status through all child nodes in order
 			protected override DefiniteAssignmentStatus VisitChildren(AstNode node, DefiniteAssignmentStatus data)
 			{
@@ -449,39 +459,39 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 				DefiniteAssignmentStatus status = data;
 				for (AstNode child = node.FirstChild; child != null; child = child.NextSibling) {
 					analysis.analysisCancellationToken.ThrowIfCancellationRequested();
-					
+
 					Debug.Assert(!(child is Statement)); // statements are visited with the CFG, not with the visitor pattern
 					status = child.AcceptVisitor(this, status);
 					status = CleanSpecialValues(status);
 				}
 				return status;
 			}
-			
+
 			#region Statements
 			// For statements, the visitor only describes the effect of the statement itself;
 			// we do not consider the effect of any nested statements.
 			// This is done because the nested statements will be reached using the control flow graph.
-			
+
 			// In fact, these methods are present so that the default logic in VisitChildren does not try to visit the nested statements.
-			
+
 			public override DefiniteAssignmentStatus VisitBlockStatement(BlockStatement blockStatement, DefiniteAssignmentStatus data)
 			{
 				return data;
 			}
-			
+
 			public override DefiniteAssignmentStatus VisitCheckedStatement(CheckedStatement checkedStatement, DefiniteAssignmentStatus data)
 			{
 				return data;
 			}
-			
+
 			public override DefiniteAssignmentStatus VisitUncheckedStatement(UncheckedStatement uncheckedStatement, DefiniteAssignmentStatus data)
 			{
 				return data;
 			}
-			
+
 			// ExpressionStatement handled by default logic
 			// VariableDeclarationStatement handled by default logic
-			
+
 			public override DefiniteAssignmentStatus VisitVariableInitializer(VariableInitializer variableInitializer, DefiniteAssignmentStatus data)
 			{
 				if (variableInitializer.Initializer.IsNull) {
@@ -494,45 +504,45 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 						return status;
 				}
 			}
-			
+
 			// IfStatement not handled by visitor, but special-cased in the code consuming the control flow graph
-			
+
 			public override DefiniteAssignmentStatus VisitSwitchStatement(SwitchStatement switchStatement, DefiniteAssignmentStatus data)
 			{
 				return switchStatement.Expression.AcceptVisitor(this, data);
 			}
-			
+
 			public override DefiniteAssignmentStatus VisitWhileStatement(WhileStatement whileStatement, DefiniteAssignmentStatus data)
 			{
 				return data; // condition is handled by special condition CFG node
 			}
-			
+
 			public override DefiniteAssignmentStatus VisitDoWhileStatement(DoWhileStatement doWhileStatement, DefiniteAssignmentStatus data)
 			{
 				return data; // condition is handled by special condition CFG node
 			}
-			
+
 			public override DefiniteAssignmentStatus VisitForStatement(ForStatement forStatement, DefiniteAssignmentStatus data)
 			{
 				return data; // condition is handled by special condition CFG node; initializer and iterator statements are handled by CFG
 			}
-			
+
 			// Break/Continue/Goto: handled by default logic
-			
+
 			// ThrowStatement: handled by default logic (just visit the expression)
 			// ReturnStatement: handled by default logic (just visit the expression)
-			
+
 			public override DefiniteAssignmentStatus VisitTryCatchStatement(TryCatchStatement tryCatchStatement, DefiniteAssignmentStatus data)
 			{
 				return data; // no special logic when entering the try-catch-finally statement
 				// TODO: where to put the special logic when exiting the try-finally statement?
 			}
-			
+
 			public override DefiniteAssignmentStatus VisitForeachStatement(ForeachStatement foreachStatement, DefiniteAssignmentStatus data)
 			{
 				return data; // assignment of the foreach loop variable is done when handling the condition node
 			}
-			
+
 			public override DefiniteAssignmentStatus VisitUsingStatement(UsingStatement usingStatement, DefiniteAssignmentStatus data)
 			{
 				if (usingStatement.ResourceAcquisition is Expression)
@@ -540,19 +550,19 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 				else
 					return data; // don't handle resource acquisition statements, as those are connected in the control flow graph
 			}
-			
+
 			public override DefiniteAssignmentStatus VisitLockStatement(LockStatement lockStatement, DefiniteAssignmentStatus data)
 			{
 				return lockStatement.Expression.AcceptVisitor(this, data);
 			}
-			
+
 			// Yield statements use the default logic
-			
+
 			public override DefiniteAssignmentStatus VisitUnsafeStatement(UnsafeStatement unsafeStatement, DefiniteAssignmentStatus data)
 			{
 				return data;
 			}
-			
+
 			public override DefiniteAssignmentStatus VisitFixedStatement(FixedStatement fixedStatement, DefiniteAssignmentStatus data)
 			{
 				DefiniteAssignmentStatus status = data;
@@ -561,7 +571,7 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 				return status;
 			}
 			#endregion
-			
+
 			#region Expressions
 			public override DefiniteAssignmentStatus VisitDirectionExpression(DirectionExpression directionExpression, DefiniteAssignmentStatus data)
 			{
@@ -572,7 +582,7 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 					return VisitChildren(directionExpression, data);
 				}
 			}
-			
+
 			public override DefiniteAssignmentStatus VisitAssignmentExpression(AssignmentExpression assignmentExpression, DefiniteAssignmentStatus data)
 			{
 				if (assignmentExpression.Operator == AssignmentOperatorType.Assign) {
@@ -582,7 +592,7 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 					return VisitChildren(assignmentExpression, data);
 				}
 			}
-			
+
 			DefiniteAssignmentStatus HandleAssignment(Expression left, Expression right, DefiniteAssignmentStatus initialStatus)
 			{
 				IdentifierExpression ident = left as IdentifierExpression;
@@ -598,23 +608,23 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 					return CleanSpecialValues(status);
 				}
 			}
-			
+
 			public override DefiniteAssignmentStatus VisitParenthesizedExpression(ParenthesizedExpression parenthesizedExpression, DefiniteAssignmentStatus data)
 			{
 				// Don't use the default logic here because we don't want to clean up the special values.
 				return parenthesizedExpression.Expression.AcceptVisitor(this, data);
 			}
-			
+
 			public override DefiniteAssignmentStatus VisitCheckedExpression(CheckedExpression checkedExpression, DefiniteAssignmentStatus data)
 			{
 				return checkedExpression.Expression.AcceptVisitor(this, data);
 			}
-			
+
 			public override DefiniteAssignmentStatus VisitUncheckedExpression(UncheckedExpression uncheckedExpression, DefiniteAssignmentStatus data)
 			{
 				return uncheckedExpression.Expression.AcceptVisitor(this, data);
 			}
-			
+
 			public override DefiniteAssignmentStatus VisitBinaryOperatorExpression(BinaryOperatorExpression binaryOperatorExpression, DefiniteAssignmentStatus data)
 			{
 				if (binaryOperatorExpression.Operator == BinaryOperatorType.ConditionalAnd) {
@@ -683,7 +693,7 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 					return VisitChildren(binaryOperatorExpression, data);
 				}
 			}
-			
+
 			public override DefiniteAssignmentStatus VisitUnaryOperatorExpression(UnaryOperatorExpression unaryOperatorExpression, DefiniteAssignmentStatus data)
 			{
 				if (unaryOperatorExpression.Operator == UnaryOperatorType.Not) {
@@ -700,7 +710,7 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 					return VisitChildren(unaryOperatorExpression, data);
 				}
 			}
-			
+
 			public override DefiniteAssignmentStatus VisitConditionalExpression(ConditionalExpression conditionalExpression, DefiniteAssignmentStatus data)
 			{
 				// C# 4.0 spec: §5.3.3.28 Definite assignment for ?: expressions
@@ -711,7 +721,7 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 					return conditionalExpression.FalseExpression.AcceptVisitor(this, data);
 				} else {
 					DefiniteAssignmentStatus afterCondition = conditionalExpression.Condition.AcceptVisitor(this, data);
-					
+
 					DefiniteAssignmentStatus beforeTrue, beforeFalse;
 					if (afterCondition == DefiniteAssignmentStatus.AssignedAfterTrueExpression) {
 						beforeTrue = DefiniteAssignmentStatus.DefinitelyAssigned;
@@ -723,20 +733,20 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 						beforeTrue = afterCondition;
 						beforeFalse = afterCondition;
 					}
-					
+
 					DefiniteAssignmentStatus afterTrue = conditionalExpression.TrueExpression.AcceptVisitor(this, beforeTrue);
 					DefiniteAssignmentStatus afterFalse = conditionalExpression.FalseExpression.AcceptVisitor(this, beforeFalse);
 					return MergeStatus(CleanSpecialValues(afterTrue), CleanSpecialValues(afterFalse));
 				}
 			}
-			
+
 			public override DefiniteAssignmentStatus VisitAnonymousMethodExpression(AnonymousMethodExpression anonymousMethodExpression, DefiniteAssignmentStatus data)
 			{
 				BlockStatement body = anonymousMethodExpression.Body;
 				analysis.ChangeNodeStatus(analysis.beginNodeDict[body], data);
 				return data;
 			}
-			
+
 			public override DefiniteAssignmentStatus VisitLambdaExpression(LambdaExpression lambdaExpression, DefiniteAssignmentStatus data)
 			{
 				Statement body = lambdaExpression.Body as Statement;
@@ -747,7 +757,7 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis {
 				}
 				return data;
 			}
-			
+
 			public override DefiniteAssignmentStatus VisitIdentifierExpression(IdentifierExpression identifierExpression, DefiniteAssignmentStatus data)
 			{
 				if (data != DefiniteAssignmentStatus.DefinitelyAssigned
