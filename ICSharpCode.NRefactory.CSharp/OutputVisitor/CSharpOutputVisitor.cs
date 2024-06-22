@@ -1138,18 +1138,18 @@ namespace ICSharpCode.NRefactory.CSharp {
 
 			switch (directionExpression.FieldDirection) {
 				case FieldDirection.In:
+					WriteKeyword(DirectionExpression.InKeywordRole);
 					break;
 				case FieldDirection.Out:
 					WriteKeyword(DirectionExpression.OutKeywordRole);
-					Space();
 					break;
 				case FieldDirection.Ref:
 					WriteKeyword(DirectionExpression.RefKeywordRole);
-					Space();
 					break;
 				default:
 					throw new NotSupportedException ("Invalid value for FieldDirection");
 			}
+			Space();
 			directionExpression.Expression.AcceptVisitor(this);
 
 			EndNode(directionExpression);
@@ -1642,6 +1642,7 @@ namespace ICSharpCode.NRefactory.CSharp {
 			case ParameterDeclaration _:
 			case TypeParameterDeclaration _:
 			case ComposedType _:
+			case LambdaExpression _:
 				Space();
 				break;
 			default:
